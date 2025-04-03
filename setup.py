@@ -11,7 +11,7 @@ setup(
     package_dir={'': 'src'},
     install_requires=[
         'PyYAML>=6.0',
-        'jsonpath-ng.ext>=1.5.3'
+        'jsonpath-ng>=1.7.0'
     ],
     entry_points={
         'console_scripts': [
