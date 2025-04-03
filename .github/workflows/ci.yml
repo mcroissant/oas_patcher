@@ -32,7 +32,7 @@ jobs:
     - name: Run linting
       run: |
         pip install flake8
-        flake8 src tests --max-line-length=88
+        flake8 src tests
 
     - name: Run tests
       run: pytest --cov=src --cov-report=xml
