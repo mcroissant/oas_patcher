@@ -40,22 +40,6 @@ Sanitize the OpenAPI document while applying the overlay:
 oas-patch --openapi openapi.yaml --overlay overlay.yaml --sanitize
 ```
 
-## Overlay Format
-The overlay document should be a YAML or JSON file containing a list of actions. Each action specifies:
-- `target`: A JSONPath expression to locate the part of the OpenAPI document to modify.
-- `update` (optional): The new value to apply at the target location.
-- `remove` (optional): A flag to indicate that the target should be removed.
-
-Example overlay:
-```yaml
-actions:
-  - target: "$.paths./pets.get"
-    update:
-      summary: "Retrieve a list of pets"
-  - target: "$.paths./pets.post"
-    remove: true
-```
-
 ## Contributing
 Contributions are welcome! To contribute:
 1. Fork the repository.
