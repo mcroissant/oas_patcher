@@ -29,28 +29,45 @@ def _get_parent_and_key(match, openapi_doc):
 
 def _apply_action(parent, key, match, action, openapi_doc):
     """Apply a single action to the matched part of the document."""
-    if match.context is not None:
-        if 'remove' in action:
-            _apply_remove(parent, key, match)
-        elif 'update' in action:
-            _apply_update(parent, key, action['update'])
-    elif parent is openapi_doc:  # Handle the case where the matched item is the root
+    if match.context is None and parent is openapi_doc:
+        # Handle root-level actions
         if 'update' in action:
             _apply_root_update(openapi_doc, action['update'])
         elif 'remove' in action:
             raise ValueError("Cannot remove the root of the document")
+        return
+
+    # Handle non-root actions
+    if 'remove' in action:
+        _apply_remove(parent, key, match)
+    elif 'update' in action:
+        _apply_update(parent, key, action['update'])
 
 
 def _apply_update(parent, key, update):
     """Apply an update action to the parent."""
     if isinstance(parent, list):
-        deep_update(parent[key], update)
-    elif isinstance(update, dict) and isinstance(parent.get(key), dict):
-        deep_update(parent[key], update)
-    elif isinstance(parent.get(key), list) and isinstance(update, list):
+        _update_list(parent, key, update)
+    elif isinstance(parent.get(key), (dict, list)):
+        _update_nested(parent, key, update)
+    else:
+        parent[key] = update
+
+
+def _update_list(parent, key, update):
+    """Handle updates for list elements."""
+    if isinstance(update, list):
         parent[key].extend(update)
-    elif isinstance(parent.get(key), list):
+    else:
         parent[key].append(update)
+
+
+def _update_nested(parent, key, update):
+    """Handle updates for nested dictionaries or lists."""
+    if isinstance(update, dict) and isinstance(parent[key], dict):
+        deep_update(parent[key], update)
+    elif isinstance(update, list) and isinstance(parent[key], list):
+        parent[key].extend(update)
     else:
         parent[key] = update
 
@@ -59,16 +76,15 @@ def _apply_remove(parent, key, match):
     """Apply a remove action to the parent."""
     if isinstance(parent, list):
         parent.remove(match.value)
-    elif key in parent:
-        del parent[key]
+    else:
+        parent.pop(key, None)
 
 
 def _apply_root_update(openapi_doc, update):
     """Apply an update action to the root of the document."""
-    if isinstance(update, dict):
-        deep_update(openapi_doc, update)
-    else:
+    if not isinstance(update, dict):
         raise ValueError("Cannot perform non-dict update on the root of the document")
+    deep_update(openapi_doc, update)
 
 
 def deep_update(target, updates):

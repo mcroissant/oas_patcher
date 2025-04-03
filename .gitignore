@@ -1,0 +1,5 @@
+.vscode/settings.json
+.coverage
+src/__pycache__/*
+tests/__pycache__/*
+coverage.xml
