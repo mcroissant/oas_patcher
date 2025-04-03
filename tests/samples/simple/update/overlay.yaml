@@ -1,0 +1,4 @@
+actions:
+  - target: "$.info"
+    update:
+      title: Updated API

@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+  x-overlay-applied: structured-overlay
+paths:
+  /example:
+    get:
+      summary: Example endpoint
+  '/':
+    summary: 'The root resource'
+    get:
+      summary: 'Retrieve the root resource'
+      x-rate-limit: 100
+  '/pets':
+    get:
+      summary: 'Retrieve a list of pets'
+      x-rate-limit: 100
+components:
+tags: []

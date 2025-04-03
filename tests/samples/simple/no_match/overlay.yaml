@@ -1,0 +1,4 @@
+actions:
+  - target: "$.nonexistent"
+    update:
+      key: value

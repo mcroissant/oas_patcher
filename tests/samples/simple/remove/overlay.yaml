@@ -1,0 +1,3 @@
+actions:
+  - target: "$.info.title"
+    remove: true
