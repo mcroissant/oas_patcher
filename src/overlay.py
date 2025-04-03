@@ -1,6 +1,8 @@
 """Module to apply the overlays to the OAS"""
 
 from jsonpath_ng.ext import parse
+
+
 def apply_overlay(openapi_doc, overlay):
     """Apply overlay actions to the OpenAPI document."""
     for action in overlay.get('actions', []):
@@ -67,6 +69,7 @@ def _apply_root_update(openapi_doc, update):
         deep_update(openapi_doc, update)
     else:
         raise ValueError("Cannot perform non-dict update on the root of the document")
+
 
 def deep_update(target, updates):
     """Iteratively update a dictionary while preserving existing keys."""

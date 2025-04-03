@@ -1,6 +1,5 @@
 import pytest
 import yaml
-from unittest.mock import patch
 from src.oas_patcher_cli import cli
 
 
@@ -95,7 +94,8 @@ def test_cli_with_sanitize_flag(setup_mocks, mock_load_file, mock_apply_overlay,
 
     assert_load_file_calls(mock_load_file, sanitize=True)
     assert_apply_overlay_call(mock_apply_overlay)
-    
+
+
 def test_help_command(mocker, capsys):
     """Test the CLI help message."""
     mocker.patch('sys.argv', ['oas-patch', '--help'])

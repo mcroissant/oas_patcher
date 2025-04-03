@@ -5,6 +5,7 @@ import json
 import re
 import yaml
 
+
 def load_yaml(file_path, sanitize=False):
     """Load a YAML file, optionally sanitizing its content."""
     try:
@@ -13,7 +14,7 @@ def load_yaml(file_path, sanitize=False):
             if sanitize:
                 content = sanitize_content(content)
             return yaml.safe_load(content)
-    except FileNotFoundError  as not_found_exc:
+    except FileNotFoundError as not_found_exc:
         raise FileNotFoundError(f"File not found: {file_path}") from not_found_exc
     except yaml.YAMLError as yaml_error_exc:
         raise ValueError(f"Invalid YAML format in file {file_path}") from yaml_error_exc

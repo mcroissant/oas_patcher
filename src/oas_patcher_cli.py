@@ -50,7 +50,7 @@ def cli():
     else:
         # Output the result to the console
         if args.openapi.endswith(('.yaml', '.yml')):
-            yaml.Dumper.ignore_aliases = lambda *args : True
+            yaml.Dumper.ignore_aliases = lambda *args: True
             print(yaml.dump(modified_doc, sort_keys=False, default_flow_style=False))
         elif args.openapi.endswith('.json'):
             print(json.dumps(modified_doc, indent=2))

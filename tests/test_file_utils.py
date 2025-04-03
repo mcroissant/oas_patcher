@@ -1,6 +1,4 @@
 import pytest
-import json
-import yaml
 from unittest.mock import mock_open, patch
 from src.file_utils import (
     load_yaml, load_json, load_file,
@@ -76,6 +74,7 @@ def test_load_file_unsupported_format():
     with pytest.raises(ValueError, match="Unsupported file format"):
         load_file("test.txt")
 
+
 def test_save_yaml():
     """Test saving data to a YAML file."""
     data = {"key": "value"}
@@ -118,6 +117,7 @@ def test_save_file_json():
         # Combine all write calls into a single string and verify the content
         written_content = "".join(call.args[0] for call in mocked_file().write.call_args_list)
         assert written_content == '{\n  "key": "value"\n}'
+
 
 def test_save_file_unsupported_format():
     """Test saving data to an unsupported file format."""

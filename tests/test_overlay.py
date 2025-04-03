@@ -234,10 +234,9 @@ def test_apply_overlay_merge_dict_with_array():
         "actions": [
             {
                 "target": "$.paths.*.get",  # Root of the document
-                "update": { "security": [{"oauth2": []}] }
+                "update": {"security": [{"oauth2": []}]}
             }
         ]
     }
-    
     result = apply_overlay(openapi_doc, overlay)
-    assert len(result["paths"]["/example"]["get"]["security"]) == 2 # Ensure both security definitions are present
+    assert len(result["paths"]["/example"]["get"]["security"]) == 2  # Ensure both security definitions are present
