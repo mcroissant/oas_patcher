@@ -1,2 +1,2 @@
-PyYAML==6.0
-jsonpath-ng.ext==1.5.3
+PyYAML>=6.0
+jsonpath-ng>=1.7.0
