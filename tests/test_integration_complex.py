@@ -22,7 +22,7 @@ def test_integration_file_based(test_case, capsys):
         # Mock CLI arguments
         with patch('sys.argv', [
             'oas-patch',
-            'overlay', 
+            'overlay',
             test_case["openapi_file"],
             test_case["overlay_file"],
             '-o', temp_output.name
