@@ -3,3 +3,4 @@
 src/__pycache__/*
 tests/__pycache__/*
 coverage.xml
+src/oas_patch.egg-info/*
