@@ -13,10 +13,16 @@ The OpenAPI Specification Patcher (oas-patch) is a command-line utility that all
 - `pip` for managing Python packages
 
 ## Installation
-### Install from Source
+
+## Install from Pypi
+```bash
+pip install oas-patch
+```
+
+### Install from Source for development
 Clone the repository and install the tool locally:
 ```bash
-git clone https://github.com/your-username/oas-patch
+git clone https://github.com/mcroissant/oas_patcher
 pip install -e .
 ```
 
@@ -27,17 +33,62 @@ The tool provides a simple CLI for applying overlays to OpenAPI documents.
 ### Example Usage
 Apply an overlay to an OpenAPI document and save the result:
 ```bash
-oas-patch --openapi openapi.yaml --overlay overlay.yaml --output modified_openapi.yaml
+oas-patch overlay openapi.yaml overlay.yaml --output modified_openapi.yaml
 ```
 
 Apply an overlay and print the result to the console:
 ```bash
-oas-patch --openapi openapi.json --overlay overlay.json
+oas-patch overlay openapi.json overlay.json
 ```
 
 Sanitize the OpenAPI document while applying the overlay:
 ```bash
-oas-patch --openapi openapi.yaml --overlay overlay.yaml --sanitize
+oas-patch overlay openapi.yaml overlay.yaml --sanitize
+```
+
+## Overlay examples
+You can find varios overlay examples in the tests/samples folder.
+The jsonpath mapping is based on [jsonpath-ng](https://github.com/h2non/jsonpath-ng/tree/master) with the extensions included.
+
+```Yaml
+overlay: 1.0.0
+info:
+  title: Update petstore API
+  version: 1.0.0
+actions:
+  - target: $.info
+    update:
+      title: OAS Patched Petstore API
+  - target: $.info.contact
+    remove: true
+  - target: $.info.license
+    update:
+      name: MIT
+  - target: $.tags[?@.name == 'pet']
+    update:
+      description: This is the new description for the pet tag
+  - target: $.tags[?@.name == 'store']
+    remove: true
+  - target: $.tags
+    update:
+      - name: newTag
+        description: This is a new tag
+  - target: $.components
+    update:
+      securitySchemes: 
+        ApiAuth:
+          type: apiKey
+          in: header
+          name: X-Api-Key 
+        BearerAuth:
+          type: http
+          scheme: bearer    
+  - target: $.servers.*.url
+    update: 
+      https://myapi.com/v1
+  - target: $.paths["/pet/findByStatus"].get.security
+    update: 
+      BearerAuth: []
 ```
 
 ## Contributing
