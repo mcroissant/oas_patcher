@@ -1,24 +1,24 @@
 import pytest
 import yaml
-from src.oas_patcher_cli import cli
+from src.oas_patch.oas_patcher_cli import cli
 
 
 @pytest.fixture
 def mock_load_file(mocker):
     """Mock the load_file function."""
-    return mocker.patch('src.oas_patcher_cli.load_file')
+    return mocker.patch('src.oas_patch.oas_patcher_cli.load_file')
 
 
 @pytest.fixture
 def mock_save_file(mocker):
     """Mock the save_file function."""
-    return mocker.patch('src.oas_patcher_cli.save_file')
+    return mocker.patch('src.oas_patch.oas_patcher_cli.save_file')
 
 
 @pytest.fixture
 def mock_apply_overlay(mocker):
     """Mock the apply_overlay function."""
-    return mocker.patch('src.oas_patcher_cli.apply_overlay')
+    return mocker.patch('src.oas_patch.oas_patcher_cli.apply_overlay')
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def assert_save_file_call(mock_save_file, output_file):
 
 def test_cli_output_to_file(setup_mocks, mock_save_file, mock_load_file, mock_apply_overlay, mocker):
     """Test the CLI with output to a file."""
-    run_cli_with_args(mocker, ['--openapi', 'openapi.yaml', '--overlay', 'overlay.yaml', '--output', 'output.yaml'])
+    run_cli_with_args(mocker, ['overlay', 'openapi.yaml', 'overlay.yaml', '-o', 'output.yaml'])
 
     assert_load_file_calls(mock_load_file, sanitize=False)
     assert_apply_overlay_call(mock_apply_overlay)
@@ -69,7 +69,7 @@ def test_cli_output_to_file(setup_mocks, mock_save_file, mock_load_file, mock_ap
 
 def test_cli_output_to_console(setup_mocks, mock_load_file, mock_apply_overlay, mocker, capsys):
     """Test the CLI with output to the console."""
-    run_cli_with_args(mocker, ['--openapi', 'openapi.yaml', '--overlay', 'overlay.yaml'])
+    run_cli_with_args(mocker, ['overlay', 'openapi.yaml', 'overlay.yaml'])
 
     assert_load_file_calls(mock_load_file, sanitize=False)
     assert_apply_overlay_call(mock_apply_overlay)
@@ -85,12 +85,12 @@ def test_cli_missing_required_arguments(mocker):
     with pytest.raises(SystemExit) as excinfo:
         cli()
 
-    assert excinfo.value.code == 2  # argparse exits with code 2 for missing arguments
+    assert excinfo.value.code == 1  # argparse exits with code 2 for missing arguments
 
 
 def test_cli_with_sanitize_flag(setup_mocks, mock_load_file, mock_apply_overlay, mocker):
     """Test the CLI with the --sanitize flag."""
-    run_cli_with_args(mocker, ['--openapi', 'openapi.yaml', '--overlay', 'overlay.yaml', '--sanitize'])
+    run_cli_with_args(mocker, ['overlay', 'openapi.yaml', 'overlay.yaml', '--sanitize'])
 
     assert_load_file_calls(mock_load_file, sanitize=True)
     assert_apply_overlay_call(mock_apply_overlay)

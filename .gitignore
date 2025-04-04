@@ -4,3 +4,6 @@ src/__pycache__/*
 tests/__pycache__/*
 coverage.xml
 src/oas_patch.egg-info/*
+.pypirc
+dist/*
+src/oas_patch/__pycache__/*

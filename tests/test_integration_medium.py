@@ -2,7 +2,7 @@ import os
 import tempfile
 import yaml
 import pytest
-from src.oas_patcher_cli import cli
+from src.oas_patch.oas_patcher_cli import cli
 from unittest.mock import patch
 
 
@@ -52,9 +52,10 @@ def test_integration_file_based(test_case, capsys):
         # Mock CLI arguments
         with patch('sys.argv', [
             'oas-patch',
-            '--openapi', test_case["openapi_file"],
-            '--overlay', test_case["overlay_file"],
-            '--output', temp_output.name
+            'overlay', 
+            test_case["openapi_file"],
+            test_case["overlay_file"],
+            '-o', temp_output.name
         ]):
             cli()
 

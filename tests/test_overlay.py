@@ -1,5 +1,5 @@
 import pytest
-from src.overlay import apply_overlay, deep_update
+from src.oas_patch.overlay import apply_overlay, deep_update
 
 
 def test_apply_overlay_update_action():

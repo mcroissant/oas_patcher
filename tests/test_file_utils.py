@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import mock_open, patch
-from src.file_utils import (
+from src.oas_patch.file_utils import (
     load_yaml, load_json, load_file,
     save_yaml, save_json, save_file,
     sanitize_content

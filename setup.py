@@ -1,27 +1,28 @@
 from setuptools import setup, find_packages
 
+print(find_packages(where='src'))  # Debugging: Print detected packages
+
 setup(
     name='oas_patch',
-    version='1.0.0',
+    version='0.0.2',
     description='A tool to apply overlays to OpenAPI documents.',
     author='Matthieu Croissant',
-    author_email='your.email@example.com',
     url='https://github.com/mcroissant/oas_patcher',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
+    packages=find_packages(where='src'),  # Automatically find all packages in 'src'
+    package_dir={'': 'src'},  # Root of the package is 'src'
     install_requires=[
         'PyYAML>=6.0',
         'jsonpath-ng>=1.7.0'
     ],
     entry_points={
         'console_scripts': [
-            'oas-patch=oas_patcher_cli:cli',  # Update this to reference the correct module
+            'oas-patch=oas_patch.oas_patcher_cli:cli',  # Reference the CLI entry point
         ],
     },
     classifiers=[
         'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
+    license='MIT',
     python_requires='>=3.7',
 )
