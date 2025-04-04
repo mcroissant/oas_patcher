@@ -1,0 +1,39 @@
+overlay: 1.0.0
+info:
+  title: Update petstore API
+  version: 1.0.0
+actions:
+  - target: $.info
+    update:
+      title: OAS Patched Petstore API
+  - target: $.info.contact
+    remove: true
+  - target: $.info.license
+    update:
+      name: MIT
+  - target: $.tags[?@.name == 'pet']
+    update:
+      description: This is the new description for the pet tag
+  - target: $.tags[?@.name == 'store']
+    remove: true
+  - target: $.tags
+    update:
+      - name: newTag
+        description: This is a new tag
+  - target: $.components
+    update:
+      securitySchemes: 
+        ApiAuth:
+          type: apiKey
+          in: header
+          name: X-Api-Key 
+        BearerAuth:
+          type: http
+          scheme: bearer    
+  - target: $.servers.*.url
+    update: 
+      https://myapi.com/v1
+  - target: $.paths["/pet/findByStatus"].get.security
+    update: 
+      BearerAuth: []
+

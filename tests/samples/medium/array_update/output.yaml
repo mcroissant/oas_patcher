@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+paths:
+  /example:
+    get:
+      summary: Example endpoint
+      parameters:
+        - name: oldParam
+          in: query
+          schema:
+            type: int
+        - name: newParam
+          in: query
+          schema:
+            type: string
+  /example2:
+    post:
+      summary: Example2 post endpoint
+    get:
+      summary: Example2 get endpoint
+      parameters:
+        - name: oldParam
+          in: query
+          schema:
+            type: int
+        - name: newParam
+          in: query
+          schema:
+            type: string

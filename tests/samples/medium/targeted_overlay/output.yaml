@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+paths:
+  /example:
+    get:
+      summary: Example endpoint
+  /foo:
+    get:
+      summary: Foo endpoint
+      description: This is the new description
+  /bar:
+    get:
+      description: This is the updated description
+    post:
+      description: This is an updated description of a child object
+      x-safe: false

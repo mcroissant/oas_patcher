@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+paths:
+  /example:
+    get:
+      summary: Example endpoint
+  /example2:
+    post:
+      summary: Example2 post endpoint
+    get:
+      summary: Example2 get endpoint
