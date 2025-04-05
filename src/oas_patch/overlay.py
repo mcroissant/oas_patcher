@@ -9,7 +9,7 @@ def apply_overlay(openapi_doc, overlay):
         jsonpath_expr = parse(action['target'])
         for match in jsonpath_expr.find(openapi_doc):
             parent, key = _get_parent_and_key(match, openapi_doc)
-            _apply_action(parent, key, match, action, openapi_doc)
+            _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc)
     return openapi_doc
 
 
@@ -27,11 +27,11 @@ def _get_parent_and_key(match, openapi_doc):
     return parent, key
 
 
-def _apply_action(parent, key, match, action, openapi_doc):
+def _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc):
     """Apply a single action to the matched part of the document."""
     if match.context is not None:
         if 'remove' in action:
-            _apply_remove(parent, key, match)
+            jsonpath_expr.filter(lambda d: True, openapi_doc)
         elif 'update' in action:
             _apply_update(parent, key, action['update'])
     elif parent is openapi_doc:  # Handle the case where the matched item is the root
@@ -53,14 +53,6 @@ def _apply_update(parent, key, update):
         parent[key].append(update)
     else:
         parent[key] = update
-
-
-def _apply_remove(parent, key, match):
-    """Apply a remove action to the parent."""
-    if isinstance(parent, list):
-        parent.remove(match.value)
-    elif key in parent:
-        del parent[key]
 
 
 def _apply_root_update(openapi_doc, update):

@@ -4,7 +4,7 @@ print(find_packages(where='src'))  # Debugging: Print detected packages
 
 setup(
     name='oas_patch',
-    version='0.0.3',
+    version='0.0.4',
     description='A tool to apply overlays to OpenAPI documents.',
     author='Matthieu Croissant',
     url='https://github.com/mcroissant/oas_patcher',
