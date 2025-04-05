@@ -54,6 +54,7 @@ def _apply_update(parent, key, update):
     else:
         parent[key] = update
 
+
 def _apply_root_update(openapi_doc, update):
     """Apply an update action to the root of the document."""
     if isinstance(update, dict):
