@@ -2,7 +2,6 @@ import yaml
 import json
 from jsonschema import Draft202012Validator, ValidationError
 import os
-import argparse
 
 from oas_patch.file_utils import load_file
 
@@ -25,6 +24,7 @@ def load_schema(schema):
         raise FileNotFoundError(f"Schema file not found: {schema}")
     except yaml.YAMLError as e:
         raise ValueError(f"Failed to parse the schema file: {schema}\n{e}")
+
 
 def format_errors(errors, output_format):
     """
@@ -56,8 +56,7 @@ def format_errors(errors, output_format):
                 error_details += f"\n\t Schema Path: {' -> '.join(map(str, error.schema_path))}"
             output.append(f"[ERROR] {error_details}")
         return "\n".join(output)
-    
-    else :
+    else:
         output = []
         if errors:
             output.append("!!! Validation failed with the following issues:")
@@ -66,7 +65,7 @@ def format_errors(errors, output_format):
                 if error.path:
                     output.append(f"\tPath: {' -> '.join(map(str, error.path))}")
         else:
-            output.append(f"Validation successful")
+            output.append("Validation successful")
         return "\n".join(output)
 
 
@@ -84,8 +83,7 @@ def validate(overlay_path, output_format):
     """
     try:
         # Load the document
-        with open(overlay_path, 'r', encoding='utf-8') as f:
-            doc = load_file(overlay_path)
+        doc = load_file(overlay_path)
 
         # Validate as Overlay
         overlay_schema = load_schema("overlay_schema_1.0.0.yml")
