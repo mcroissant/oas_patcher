@@ -6,6 +6,7 @@ import sys
 import yaml
 from oas_patch.file_utils import load_file, save_file
 from oas_patch.overlay import apply_overlay
+from oas_patch.validator import validate
 from oas_patch.overlay_diff import create_overlay
 
 
@@ -37,6 +38,16 @@ def parse_arguments():
     diff_parser.add_argument('modified', help='Path to the target OpenAPI document (YAML/JSON).')
     diff_parser.add_argument('-o', '--output', help='Path to save the generated OpenAPI Overlay.')
 
+
+    # Subcommand: validate
+    validate_parser = subparsers.add_parser(
+        'validate',
+        help='Validate an OpenAPI Overlay document against the specification.'
+    )
+    validate_parser.add_argument("overlay", type=str, help="Path to the document to validate (YAML/JSON).")
+    validate_parser.add_argument("--format", type=str, choices=["sh", "log", "yaml"], default="sh",
+                                 help="Output format for validation results (shell, log or yaml).")
+
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
@@ -44,8 +55,24 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def handle_validate(args):
+    """Handle the 'validate' subcommand."""
+
+    try:
+        overlay_doc = load_file(args.overlay)
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    try:
+        output = validate(overlay_doc, args.format)
+        print(output)
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error: Unable to load the document. {e}")
+        sys.exit(1)
+
+
 def handle_overlay(args):
-    # Load input files
     try:
         openapi_doc = load_file(args.openapi, args.sanitize)
         overlay = load_file(args.overlay)
@@ -53,15 +80,12 @@ def handle_overlay(args):
         print(f"Error: {e}")
         sys.exit(1)
 
-    # Apply overlay
     modified_doc = apply_overlay(openapi_doc, overlay)
 
     if args.output:
-        # Save the result to the specified file
         save_file(modified_doc, args.output)
         print(f'Modified OpenAPI document saved to {args.output}')
     else:
-        # Output the result to the console
         if args.openapi.endswith(('.yaml', '.yml')):
             yaml.Dumper.ignore_aliases = lambda *args: True
             print(yaml.dump(modified_doc, sort_keys=False, default_flow_style=False))
@@ -100,5 +124,7 @@ def cli():
     args = parse_arguments()
     if args.command == 'overlay':
         handle_overlay(args)
+    elif args.command == 'validate':
+        handle_validate(args)
     elif args.command == 'diff':
         handle_diff(args)
