@@ -12,7 +12,8 @@ setup(
     package_dir={'': 'src'},  # Root of the package is 'src'
     install_requires=[
         'PyYAML>=6.0',
-        'jsonpath-ng>=1.7.0'
+        'jsonpath-ng>=1.7.0',
+        'deepdiff>=8.4.2'
     ],
     entry_points={
         'console_scripts': [
