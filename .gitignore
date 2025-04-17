@@ -9,3 +9,5 @@ dist/*
 build/*
 src/oas_patch/__pycache__/*
 tests/overlay/__pycache__/*
+tests/diff/__pycache__/*
+tests/unit_test/__pycache__/*
