@@ -6,4 +6,6 @@ coverage.xml
 src/oas_patch.egg-info/*
 .pypirc
 dist/*
+build/*
 src/oas_patch/__pycache__/*
+tests/overlay/__pycache__/*
