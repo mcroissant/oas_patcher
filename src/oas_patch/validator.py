@@ -1,9 +1,6 @@
 import yaml
-import json
 from jsonschema import Draft202012Validator, ValidationError
 import os
-
-from oas_patch.file_utils import load_file
 
 
 def load_schema(schema):
@@ -38,6 +35,7 @@ def format_errors(errors, output_format):
         str: Formatted error messages.
     """
     if output_format == "yaml":
+        status = "failed" if errors else "success"
         formatted_errors = [
             {
                 "message": error.message,
@@ -45,9 +43,9 @@ def format_errors(errors, output_format):
             }
             for error in errors
         ]
-        return yaml.dump({"status": "failed", "errors": formatted_errors}, sort_keys=False)
+        return yaml.dump({"status": status, "errors": formatted_errors}, sort_keys=False)
     elif output_format == 'log':  # Default to log-friendly format
-        output = ["[ERROR] Validation failed with the following issues"]
+        output = ["[ERROR] Validation failed with the following issues"] if errors else ["[INFO] Validation successful"]
         for error in errors:
             error_details = f"{error.message}"
             if error.path:
@@ -69,33 +67,24 @@ def format_errors(errors, output_format):
         return "\n".join(output)
 
 
-def validate(overlay_path, output_format):
+def validate(overlay_doc, output_format):
     """
     Validate an Overlay document against its Specification.
 
     Args:
         file_path (str): Path to the document (YAML/JSON).
+        output_format (str): Format for the output ('sh', 'log', 'yaml')
 
-    Raises:
-        FileNotFoundError: If the file does not exist.
-        ValueError: If the file cannot be parsed as YAML or JSON.
-        ValidationError: If the document is not valid according to the Overlay Specification.
+    Returns:
+        str: Formatted validation results or error message
     """
     try:
-        # Load the document
-        doc = load_file(overlay_path)
-
         # Validate as Overlay
         overlay_schema = load_schema("overlay_schema_1.0.0.yml")
         validator = Draft202012Validator(overlay_schema)
-        errors = list(validator.iter_errors(doc), output_format)
-        print(format_errors(errors, output_format))
-
-    except FileNotFoundError:
-        print(f"Error: File not found: {overlay_path}")
-    except (yaml.YAMLError, json.JSONDecodeError) as e:
-        print(f"Error: Failed to parse the document:\n    {e}")
+        errors = list(validator.iter_errors(overlay_doc))
+        return format_errors(errors, output_format)
     except ValidationError as e:
-        print(f"Validation failed: {e}")
+        return f"Validation failed: {e}"
     except ValueError as e:
-        print(f"Error: {e}")
+        return f"Error: {e}"

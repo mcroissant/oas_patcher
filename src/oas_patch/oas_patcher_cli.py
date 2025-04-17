@@ -47,9 +47,16 @@ def parse_arguments():
 
 def handle_validate(args):
     """Handle the 'validate' subcommand."""
+
     try:
-        validate(args.overlay)
-        print(f"Validation successful: {args.openapi} is a valid OpenAPI Overlay document.")
+        overlay_doc = load_file(args.overlay)
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    try:
+        output = validate(overlay_doc, args.format)
+        print(output)
     except (FileNotFoundError, ValueError) as e:
         print(f"Error: Unable to load the document. {e}")
         sys.exit(1)
