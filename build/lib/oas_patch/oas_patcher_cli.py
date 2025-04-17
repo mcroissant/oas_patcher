@@ -33,10 +33,10 @@ def parse_arguments():
     validate_parser = subparsers.add_parser(
         'validate',
         help='Validate an OpenAPI Overlay document against the specification.'
-    )
-    validate_parser.add_argument("overlay", type=str, help="Path to the document to validate (YAML/JSON).")
-    validate_parser.add_argument("--format", type=str, choices=["sh", "log", "yaml"], default="sh",
-                                 help="Output format for validation results (shell, log or yaml).")
+    )    
+    parser.add_argument("overlay", type=str, help="Path to the document to validate (YAML/JSON).")
+    parser.add_argument("--format", type=str, choices=["sh","log", "yaml"], default="sh", help="Output format for validation results (shell, log or yaml).")
+    
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -47,21 +47,14 @@ def parse_arguments():
 
 def handle_validate(args):
     """Handle the 'validate' subcommand."""
-
-    try:
-        overlay_doc = load_file(args.overlay)
-    except (FileNotFoundError, ValueError) as e:
-        print(f"Error: {e}")
-        sys.exit(1)
-
-    try:
-        output = validate(overlay_doc, args.format)
-        print(output)
+    try:        
+        errors = validate(args.overlay)
+        print(format_errors(errors, args.output_format))
+        print(f"Validation successful: {args.openapi} is a valid {doc_type} document.")
     except (FileNotFoundError, ValueError) as e:
         print(f"Error: Unable to load the document. {e}")
         sys.exit(1)
-
-
+        
 def handle_overlay(args):
     try:
         openapi_doc = load_file(args.openapi, args.sanitize)
