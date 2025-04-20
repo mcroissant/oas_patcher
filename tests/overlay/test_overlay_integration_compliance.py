@@ -2,7 +2,7 @@ import os
 import tempfile
 import yaml
 import pytest
-from src.oas_patch.oas_patcher_cli import cli
+from oas_patch.oas_patcher_cli import cli
 from unittest.mock import patch
 
 
