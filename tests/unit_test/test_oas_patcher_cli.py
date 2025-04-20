@@ -1,24 +1,24 @@
 import pytest
 import yaml
-from src.oas_patch.oas_patcher_cli import cli
+from oas_patch.oas_patcher_cli import cli
 
 
 @pytest.fixture
 def mock_load_file(mocker):
     """Mock the load_file function."""
-    return mocker.patch('src.oas_patch.oas_patcher_cli.load_file')
+    return mocker.patch('oas_patch.oas_patcher_cli.load_file')
 
 
 @pytest.fixture
 def mock_save_file(mocker):
     """Mock the save_file function."""
-    return mocker.patch('src.oas_patch.oas_patcher_cli.save_file')
+    return mocker.patch('oas_patch.oas_patcher_cli.save_file')
 
 
 @pytest.fixture
 def mock_apply_overlay(mocker):
     """Mock the apply_overlay function."""
-    return mocker.patch('src.oas_patch.oas_patcher_cli.apply_overlay')
+    return mocker.patch('oas_patch.oas_patcher_cli.apply_overlay')
 
 
 @pytest.fixture

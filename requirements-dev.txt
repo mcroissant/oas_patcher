@@ -1,5 +1,6 @@
 PyYAML>=6.0
 jsonpath-ng>=1.7.0
+deepdiff>=8.4.2
 pytest==7.4.0
 pytest-mock==3.11.1
 flake8==6.1.0

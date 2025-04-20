@@ -2,34 +2,16 @@ import os
 import tempfile
 import yaml
 import pytest
-from src.oas_patch.oas_patcher_cli import cli
+from oas_patch.oas_patcher_cli import cli
 from unittest.mock import patch
 
 
 @pytest.mark.parametrize("test_case", [
     {
-        "name": "update",
-        "openapi_file": "tests/samples/simple/update/openapi.yaml",
-        "overlay_file": "tests/samples/simple/update/overlay.yaml",
-        "expected_file": "tests/samples/simple/update/output.yaml",
-    },
-    {
-        "name": "remove",
-        "openapi_file": "tests/samples/simple/remove/openapi.yaml",
-        "overlay_file": "tests/samples/simple/remove/overlay.yaml",
-        "expected_file": "tests/samples/simple/remove/output.yaml",
-    },
-    {
-        "name": "multi_action",
-        "openapi_file": "tests/samples/simple/multi_action/openapi.yaml",
-        "overlay_file": "tests/samples/simple/multi_action/overlay.yaml",
-        "expected_file": "tests/samples/simple/multi_action/output.yaml",
-    },
-    {
-        "name": "no_match",
-        "openapi_file": "tests/samples/simple/no_match/openapi.yaml",
-        "overlay_file": "tests/samples/simple/no_match/overlay.yaml",
-        "expected_file": "tests/samples/simple/no_match/output.yaml",
+        "name": "petstore",
+        "openapi_file": "tests/samples/complex/petstore/openapi.yaml",
+        "overlay_file": "tests/samples/complex/petstore/overlay.yaml",
+        "expected_file": "tests/samples/complex/petstore/output.yaml",
     }
 ])
 def test_integration_file_based(test_case, capsys):

@@ -43,9 +43,10 @@ def _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc):
 
 def _apply_update(parent, key, update):
     """Apply an update action to the parent."""
+
     if isinstance(parent, list):
         deep_update(parent[key], update)
-    elif isinstance(update, dict) and isinstance(parent.get(key), dict):
+    elif isinstance(parent.get(key), dict) and isinstance(update, dict):
         deep_update(parent[key], update)
     elif isinstance(parent.get(key), list) and isinstance(update, list):
         parent[key].extend(update)

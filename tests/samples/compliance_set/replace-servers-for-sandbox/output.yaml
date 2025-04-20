@@ -3,6 +3,9 @@ info:
   title: Simple API
   description: A basic OpenAPI description with a single endpoint.
   version: 1.0.0
+servers:
+  - url: http://api-test-tunnel.local
+    description: Local development server
 paths:
   /getItems:
     get:
@@ -38,6 +41,3 @@ paths:
                     - id: 2
                       name: Item Two
                       description: Description for item two
-servers:
-  - url: http://api-test-tunnel.local
-    description: Local development server
