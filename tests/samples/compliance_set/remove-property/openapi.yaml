@@ -19,7 +19,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Building'
-  '/buildings/{buildingId}':
+  /buildings/{buildingId}:
     get:
       summary: Specific building
       operationId: buildingById

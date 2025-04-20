@@ -46,7 +46,7 @@ def load_file(file_path, sanitize=False):
 def save_yaml(data, file_path):
     """Save data to a YAML file."""
     with open(file_path, 'w', encoding='utf-8') as file:
-        yaml.dump(data, file, sort_keys=False, default_flow_style=False)
+        yaml.dump(data, file, sort_keys=False, default_flow_style=False, width=4096)
 
 
 def save_json(data, file_path):

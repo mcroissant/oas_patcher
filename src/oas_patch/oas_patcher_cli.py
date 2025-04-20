@@ -38,7 +38,6 @@ def parse_arguments():
     diff_parser.add_argument('modified', help='Path to the target OpenAPI document (YAML/JSON).')
     diff_parser.add_argument('-o', '--output', help='Path to save the generated OpenAPI Overlay.')
 
-
     # Subcommand: validate
     validate_parser = subparsers.add_parser(
         'validate',
@@ -115,8 +114,7 @@ def handle_diff(args):
             yaml.Dumper.ignore_aliases = lambda *args: True
             print(yaml.dump(overlay_doc, sort_keys=False, default_flow_style=False))
         elif args.original.endswith('.json'):
-            print(json.dumps(overlay_doc, indent=2))            
-
+            print(json.dumps(overlay_doc, indent=2))
 
 
 def cli():
