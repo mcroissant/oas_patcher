@@ -1,0 +1,1 @@
+include src/oas_patch/schema/*.yml
