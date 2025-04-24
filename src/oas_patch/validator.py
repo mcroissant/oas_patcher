@@ -1,6 +1,5 @@
 import yaml
 from jsonschema import Draft202012Validator, ValidationError
-import os
 from importlib.resources import files
 
 

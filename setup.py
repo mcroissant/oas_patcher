@@ -13,7 +13,7 @@ setup(
     include_package_data=True,  # Include non-Python files specified in MANIFEST.in
     install_requires=[
         'PyYAML>=6.0',
-        'jsonpath-ng>=1.7.0',      
+        'jsonpath-ng>=1.7.0',
         'jsonschema>=4.23.0',
         'deepdiff>=8.4.2'
     ],
@@ -23,7 +23,6 @@ setup(
         ],
     },
     classifiers=[
-        'Programming Language :: Python :: 3',
-        #...
+        'Programming Language :: Python :: 3'
     ],
 )
