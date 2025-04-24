@@ -1,6 +1,6 @@
 import yaml
 from jsonschema import Draft202012Validator, ValidationError
-from importlib.resources import files
+from importlib.resources import files, as_file
 
 
 def load_schema(schema):
@@ -8,15 +8,16 @@ def load_schema(schema):
     Load the Overlay JSON schema from the schema directory.
 
     Args:
-        schema_name (str): The name of the schema file.
+        schema (str): The name of the schema file.
 
     Returns:
         dict: The loaded JSON schema.
     """
     try:
         schema_path = files("oas_patch.schema").joinpath(schema)
-        with schema_path.open("r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+        with as_file(schema_path) as path:
+            with path.open("r", encoding="utf-8") as f:
+                return yaml.safe_load(f)
     except FileNotFoundError:
         raise FileNotFoundError(f"Schema file not found: {schema}")
     except yaml.YAMLError as e:
