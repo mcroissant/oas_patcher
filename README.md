@@ -15,7 +15,7 @@ A command-line tool for working with OpenAPI Specification (OAS) Overlays, allow
 ## Installation
 
 ```bash
-pip install oas-patcher
+pip install oas-patch
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ pip install oas-patcher
 Apply changes from an overlay file to an OpenAPI document:
 
 ```bash
-oas-patcher overlay openapi.yaml overlay.yaml -o modified.yaml
+oas-patch overlay openapi.yaml overlay.yaml -o modified.yaml
 ```
 
 Options:
@@ -37,7 +37,7 @@ Options:
 Create an overlay file by comparing two OpenAPI documents:
 
 ```bash
-oas-patcher diff original.yaml modified.yaml -o overlay.yaml
+oas-patch diff original.yaml modified.yaml -o overlay.yaml
 ```
 
 Options:
@@ -48,7 +48,7 @@ Options:
 Validate an OpenAPI Overlay document against the specification:
 
 ```bash
-oas-patcher validate overlay.yaml --format yaml
+oas-patch validate overlay.yaml --format yaml
 ```
 
 Options:
