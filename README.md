@@ -2,7 +2,7 @@
 
 A command-line tool for working with OpenAPI Specification (OAS) Overlays, allowing you to patch and modify OpenAPI documents.
 
-> **NOTE**  try it now :   [Online Demo](http://test-453444549.us-west-2.elb.amazonaws.com:8081/)
+> **NOTE**  try it now :   [Online Demo](https://vbtn4932y3.execute-api.us-east-1.amazonaws.com/dev/)
 
 
 
