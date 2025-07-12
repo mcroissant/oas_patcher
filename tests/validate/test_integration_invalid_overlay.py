@@ -1,6 +1,6 @@
 import pytest
+from click.testing import CliRunner
 from oas_patch.oas_patcher_cli import cli
-from unittest.mock import patch
 
 
 @pytest.mark.parametrize("test_case", [
@@ -27,20 +27,21 @@ from unittest.mock import patch
 ])
 def test_integration_file_based(test_case, capsys):
     """Test the CLI using input and expected output files."""
-    # Mock CLI arguments
-    with patch('sys.argv', [
-        'oas-patch',
+    runner = CliRunner()
+    
+    # Run the validate command
+    result = runner.invoke(cli, [
         'validate',
         test_case["overlay_file"],
         '--format',
         'log'
-    ]):
-        cli()
-
-    # Capture the CLI console output
-    captured = capsys.readouterr()
-
-    # Assert that '[ERROR]' is not in the captured output
-    assert test_case["failure"] in captured.out, f"Test case '{test_case['name']}' failed without expected error in output."
-    assert '[ERROR]' in captured.out, f"Test case '{test_case['name']}' failed with errors in output."
-    assert '[INFO]' not in captured.out
+    ])
+    
+    # Note: The current validate command doesn't set exit code for validation failures
+    # It only exits with non-zero for file not found or other system errors
+    # The validation logic works correctly and outputs the expected error messages
+    
+    # Assert that the expected failure message is in the output
+    assert test_case["failure"] in result.output, f"Test case '{test_case['name']}' failed without expected error in output."
+    assert '[ERROR]' in result.output, f"Test case '{test_case['name']}' failed with errors in output."
+    assert '[INFO]' not in result.output

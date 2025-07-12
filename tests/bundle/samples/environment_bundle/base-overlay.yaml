@@ -1,0 +1,16 @@
+overlay: 1.0.0
+info:
+  title: Base Overlay
+  version: 1.0.0
+actions:
+  - target: "$.info"
+    update:
+      title: "{{ app_name }}"
+      version: "{{ base_version }}"
+  - target: "$.servers"
+    remove: true
+  - target: "$"
+    update:
+      servers:
+        - url: https://api.example.com
+          description: Default server

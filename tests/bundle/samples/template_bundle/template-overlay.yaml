@@ -1,0 +1,61 @@
+overlay: 1.0.0
+info:
+  title: Template Overlay
+  version: 1.0.0
+actions:
+  - target: "$.info"
+    update:
+      title: "{{ api_title }}"
+      version: "{{ api_version }}"
+      description: "Auto-generated API for {{ owner }}"
+      contact:
+        name: "{{ owner }} Support"
+        url: "{{ base_url }}/support"
+  - target: "$.servers"
+    remove: true
+  - target: "$.components"
+    remove: true
+  - target: "$"
+    update:
+      servers:
+        - url: "{{ base_url }}"
+          description: "{{ owner }} API Server"
+      components:
+        securitySchemes:
+          BearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: "JWT token for {{ api_title }}"
+  - target: "$.paths"
+    update:
+      "/users":
+        get:
+          summary: "GET users"
+          security:
+            - BearerAuth: []
+          responses:
+            '200':
+              description: "List of users"
+        post:
+          summary: "POST users"
+          security:
+            - BearerAuth: []
+          responses:
+            '201':
+              description: "User created"
+      "/products":
+        get:
+          summary: "GET products"
+          security:
+            - BearerAuth: []
+          responses:
+            '200':
+              description: "List of products"
+        post:
+          summary: "POST products"
+          security:
+            - BearerAuth: []
+          responses:
+            '201':
+              description: "Product created"

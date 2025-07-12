@@ -1,0 +1,26 @@
+overlay: 1.0.0
+info:
+  title: Production Overlay
+  version: 1.0.0
+actions:
+  - target: "$.servers"
+    remove: true
+  - target: "$"
+    update:
+      servers:
+        - url: https://api.example.com
+          description: Production server
+  - target: "$.info"
+    update:
+      description: "{{ app_name }} - Production Environment"
+      'x-environment': production
+  - target: "$.components"
+    remove: true
+  - target: "$"
+    update:
+      components:
+        securitySchemes:
+          ApiKey:
+            type: apiKey
+            in: header
+            name: X-API-Key

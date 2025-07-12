@@ -2,8 +2,8 @@ import os
 import tempfile
 import yaml
 import pytest
+from click.testing import CliRunner
 from oas_patch.oas_patcher_cli import cli
-from unittest.mock import patch
 
 
 @pytest.mark.parametrize("test_case", [
@@ -58,18 +58,21 @@ from unittest.mock import patch
 ])
 def test_integration_file_based(test_case, capsys):
     """Test the CLI using input and expected output files."""
+    runner = CliRunner()
+    
     with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp_output:
         temp_output.close()
 
-        # Mock CLI arguments
-        with patch('sys.argv', [
-            'oas-patch',
+        # Apply the overlay using overlay command
+        result = runner.invoke(cli, [
             'overlay',
             test_case["openapi_file"],
             test_case["overlay_file"],
             '-o', temp_output.name
-        ]):
-            cli()
+        ])
+        
+        # Check that overlay command succeeded
+        assert result.exit_code == 0, f"Overlay command failed for '{test_case['name']}': {result.output}"
 
         # Load the CLI output
         with open(temp_output.name, 'r', encoding='utf-8') as output_file:

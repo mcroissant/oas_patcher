@@ -1,0 +1,17 @@
+overlay: 1.0.0
+info:
+  title: Test Overlay
+  version: 1.0.0
+actions:
+  - target: "$.servers"
+    remove: true
+  - target: "$.info"
+    update:
+      description: "{{ app_name }} - Test Environment"
+      'x-environment': testing
+      'x-test-mode': true
+  - target: "$"
+    update:
+      servers:
+        - url: https://test-api.example.com
+          description: Test server

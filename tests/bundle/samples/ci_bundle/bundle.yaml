@@ -1,0 +1,15 @@
+name: CI/CD Environment Bundle
+description: Bundle demonstrating environment variable resolution for CI/CD pipelines
+overlays:
+  - path: base-overlay.yaml
+    environment: ["base"]
+  - path: ci-overlay.yaml
+    environment: ["ci", "development", "staging", "production"]
+    variables:
+      deploy_timestamp: "${BUILD_TIMESTAMP:unknown}"
+      build_number: "${CI_BUILD_NUMBER:0}"
+variables:
+  app_name: "${APP_NAME:My API}"
+  api_version: "${API_VERSION:1.0.0}"
+  base_url: "${API_BASE_URL:https://localhost:3000}"
+  environment: "${DEPLOY_ENVIRONMENT:development}"

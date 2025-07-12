@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Base Environment API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: API is healthy
+  /version:
+    get:
+      summary: Get API version
+      responses:
+        '200':
+          description: API version information

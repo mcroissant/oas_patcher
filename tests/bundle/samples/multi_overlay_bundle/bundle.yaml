@@ -1,0 +1,14 @@
+name: Multi Overlay Bundle
+description: A bundle with multiple overlays for different purposes
+version: 1.0.0
+overlays:
+  - path: info-overlay.yaml
+    description: Update API information
+  - path: security-overlay.yaml
+    description: Add security definitions
+  - path: paths-overlay.yaml
+    description: Add new API paths
+variables:
+  api_name: Pet Store API
+  api_version: "2.0.0"
+  security_scheme: Bearer

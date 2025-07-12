@@ -1,6 +1,6 @@
 import pytest
+from click.testing import CliRunner
 from oas_patch.oas_patcher_cli import cli
-from unittest.mock import patch
 
 
 @pytest.mark.parametrize("test_case", [
@@ -83,19 +83,19 @@ from unittest.mock import patch
 ])
 def test_integration_file_based(test_case, capsys):
     """Test the CLI using input and expected output files."""
-    # Mock CLI arguments
-    with patch('sys.argv', [
-        'oas-patch',
+    runner = CliRunner()
+    
+    # Run validate command
+    result = runner.invoke(cli, [
         'validate',
         test_case["overlay_file"],
         '--format',
         'log'
-    ]):
-        cli()
+    ])
+    
+    # Check that validate command succeeded
+    assert result.exit_code == 0, f"Validate command failed for '{test_case['name']}': {result.output}"
 
-    # Capture the CLI console output
-    captured = capsys.readouterr()
-
-    # Assert that '[ERROR]' is not in the captured output
-    assert '[ERROR]' not in captured.out, f"Test case '{test_case['name']}' failed with errors in output."
-    assert '[INFO]' in captured.out
+    # Assert that '[ERROR]' is not in the output (these should be valid overlays)
+    assert '[ERROR]' not in result.output, f"Test case '{test_case['name']}' failed with errors in output."
+    assert '[INFO]' in result.output

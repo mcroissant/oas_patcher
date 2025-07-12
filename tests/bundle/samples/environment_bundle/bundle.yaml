@@ -1,0 +1,18 @@
+name: Environment Bundle
+description: A bundle with environment-specific overlays
+version: 1.0.0
+overlays:
+  - path: base-overlay.yaml
+    description: Base configuration for all environments
+  - path: dev-overlay.yaml
+    description: Development environment configuration
+    environment: [dev, development]
+  - path: prod-overlay.yaml
+    description: Production environment configuration
+    environment: [prod, production]
+  - path: test-overlay.yaml
+    description: Test environment configuration
+    environment: [test, testing]
+variables:
+  app_name: Environment API
+  base_version: "1.0.0"
