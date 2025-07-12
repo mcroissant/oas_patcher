@@ -23,7 +23,6 @@ my-bundle/
 │   ├── base.yaml
 │   ├── security.yaml
 │   └── environment.yaml
-└── README.md           # Bundle documentation (optional)
 ```
 
 ## Bundle Configuration
@@ -57,16 +56,16 @@ overlays:
       monitoring_endpoint: "https://metrics.acme.com"
 ```
 
-## Bundle Discovery
+## Bundle Discovery and Management
 
-OAS Patcher automatically discovers bundles by scanning for `bundle.yaml` files:
+OAS Patcher provides commands to work with bundles in your current directory or project:
 
 ```bash
-# List all available bundles
-oas-patch bundle list
+# Create an example bundle in current directory
+oas-patch bundle init
 
-# Show bundle details
-oas-patch bundle show production-api-bundle
+# Validate a bundle configuration
+oas-patch bundle validate bundle.yaml
 ```
 
 ## Applying Bundles
@@ -75,13 +74,13 @@ Apply a complete bundle to an OpenAPI specification:
 
 ```bash
 # Apply all overlays in a bundle
-oas-patch bundle apply openapi.yaml production-api-bundle -o output.yaml
+oas-patch bundle apply openapi.yaml bundle.yaml -o output.yaml
 
 # Apply bundle for specific environment
-oas-patch bundle apply openapi.yaml production-api-bundle --environment production -o output.yaml
+oas-patch bundle apply openapi.yaml bundle.yaml --environment production -o output.yaml
 
 # Apply with additional variables
-oas-patch bundle apply openapi.yaml production-api-bundle \
+oas-patch bundle apply openapi.yaml bundle.yaml \
   --variable region=us-east-1 \
   --variable instance_type=production \
   -o output.yaml
@@ -109,10 +108,10 @@ When applying a bundle, only overlays matching the specified environment will be
 
 ```bash
 # Only base.yaml and development.yaml will be applied
-oas-patch bundle apply api.yaml my-bundle --environment development
+oas-patch bundle apply api.yaml bundle.yaml --environment development
 
 # Only base.yaml and production.yaml will be applied
-oas-patch bundle apply api.yaml my-bundle --environment production
+oas-patch bundle apply api.yaml bundle.yaml --environment production
 ```
 
 ## Variable Management
@@ -146,7 +145,7 @@ overlays:
 Provided at runtime and override all other variables:
 
 ```bash
-oas-patch bundle apply api.yaml my-bundle \
+oas-patch bundle apply api.yaml bundle.yaml \
   --variable api_base_url=https://custom-api.example.com \
   --variable custom_setting=true
 ```
@@ -159,17 +158,6 @@ Variables are resolved in this order (highest to lowest precedence):
 3. Overlay-specific variables
 4. Bundle global variables
 
-## Bundle Validation
-
-Validate bundle configuration and overlay syntax:
-
-```bash
-# Validate bundle configuration
-oas-patch bundle validate my-bundle
-
-# Validate and show what would be applied
-oas-patch bundle preview api.yaml my-bundle --environment production
-```
 
 ## Advanced Bundle Features
 
@@ -202,30 +190,6 @@ overlays:
       database_url: "{{ env('DATABASE_URL') }}"
       api_version: "{{ api_version }}"
       deployment_time: "{{ now() }}"
-```
-
-### Multi-Environment Workflows
-
-Structure bundles for complex deployment pipelines:
-
-```yaml
-# Bundle for development
-overlays:
-  - path: "overlays/base.yaml"
-  - path: "overlays/dev-database.yaml"
-    environment: ["development"]
-  - path: "overlays/debug-headers.yaml"
-    environment: ["development"]
-
-# Bundle for production
-overlays:
-  - path: "overlays/base.yaml"
-  - path: "overlays/prod-database.yaml"
-    environment: ["production"]
-  - path: "overlays/security-headers.yaml"
-    environment: ["production"]
-  - path: "overlays/rate-limiting.yaml"
-    environment: ["production"]
 ```
 
 ## Bundle Organization Best Practices
@@ -262,20 +226,6 @@ version: "2.1.0"
 description: "Security configuration bundle - includes OAuth 2.0 and API key auth"
 ```
 
-### 4. Documentation
-
-Include comprehensive documentation:
-
-```yaml
-name: "compliance-bundle"
-description: |
-  Compliance and security bundle that applies:
-  - GDPR data protection headers
-  - SOC 2 audit trail configuration
-  - PCI DSS security requirements
-  - HIPAA privacy controls (when hipaa environment is specified)
-```
-
 ## Common Bundle Patterns
 
 ### Environment Promotion
@@ -284,13 +234,13 @@ Create bundles that transform configurations for environment promotion:
 
 ```bash
 # Apply development bundle
-oas-patch bundle apply base-api.yaml dev-bundle --environment development
+oas-patch bundle apply base-api.yaml dev-bundle.yaml --environment development
 
 # Apply staging bundle (with additional security)
-oas-patch bundle apply base-api.yaml staging-bundle --environment staging
+oas-patch bundle apply base-api.yaml staging-bundle.yaml --environment staging
 
 # Apply production bundle (with all security and monitoring)
-oas-patch bundle apply base-api.yaml prod-bundle --environment production
+oas-patch bundle apply base-api.yaml prod-bundle.yaml --environment production
 ```
 
 ### Feature Flags

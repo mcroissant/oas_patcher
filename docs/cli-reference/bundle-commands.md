@@ -12,14 +12,14 @@ pip install oas-patch[enhanced]
 pip install Jinja2 rich click
 ```
 
-## apply
+## bundle apply
 
 Apply overlay bundle to OpenAPI document with environment support and template processing.
 
 ### Syntax
 
 ```bash
-oas-patch apply OPENAPI_FILE BUNDLE_NAME [OPTIONS]
+oas-patch bundle apply OPENAPI_FILE BUNDLE_FILE [OPTIONS]
 ```
 
 ### Arguments
@@ -27,7 +27,7 @@ oas-patch apply OPENAPI_FILE BUNDLE_NAME [OPTIONS]
 | Argument | Description |
 |----------|-------------|
 | `OPENAPI_FILE` | Path to the OpenAPI document (YAML/JSON) |
-| `BUNDLE_NAME` | Name of the overlay bundle to apply |
+| `BUNDLE_FILE` | Path to the bundle configuration file (e.g., bundle.yaml) |
 
 ### Options
 
@@ -35,7 +35,6 @@ oas-patch apply OPENAPI_FILE BUNDLE_NAME [OPTIONS]
 |--------|-------|-------------|
 | `--output` | `-o` | Output file path (auto-generated if not specified) |
 | `--env` | `-e` | Environment name to use for filtering overlays |
-| `--config` | `-c` | Configuration directory (default: overlays) |
 | `--format` | `-f` | Output format: `yaml` or `json` |
 | `--var` |  | Variables in key=value format (repeatable) |
 | `--dry-run` |  | Preview changes without saving |
@@ -48,37 +47,37 @@ oas-patch apply OPENAPI_FILE BUNDLE_NAME [OPTIONS]
 
 ```bash
 # Apply all overlays in bundle
-oas-patch apply api.yaml my-bundle -o output.yaml
+oas-patch bundle apply api.yaml bundle.yaml -o output.yaml
 
 # Apply with auto-generated output filename
-oas-patch apply api.yaml production-bundle
-# Creates: api-production-bundle.yaml
+oas-patch bundle apply api.yaml bundle.yaml
+# Creates: api-example-bundle.yaml
 ```
 
 #### Environment-Specific Application
 
 ```bash
 # Apply only development overlays
-oas-patch apply api.yaml app-bundle --env development -o api-dev.yaml
+oas-patch bundle apply api.yaml bundle.yaml --env development -o api-dev.yaml
 
 # Apply production overlays
-oas-patch apply api.yaml app-bundle --env production -o api-prod.yaml
+oas-patch bundle apply api.yaml bundle.yaml --env production -o api-prod.yaml
 
 # Apply staging with verbose output
-oas-patch apply api.yaml app-bundle --env staging --verbose
+oas-patch bundle apply api.yaml bundle.yaml --env staging --verbose
 ```
 
 #### Variable Substitution
 
 ```bash
 # Pass variables to templates
-oas-patch apply api.yaml app-bundle \
+oas-patch bundle apply api.yaml bundle.yaml \
   --var api_version=v2.1 \
   --var base_url=https://api.example.com \
   -o api-configured.yaml
 
 # Multiple variables for environment
-oas-patch apply api.yaml deploy-bundle \
+oas-patch bundle apply api.yaml deploy-bundle.yaml \
   --env production \
   --var region=us-east-1 \
   --var instance_type=production \
@@ -89,10 +88,10 @@ oas-patch apply api.yaml deploy-bundle \
 
 ```bash
 # Preview changes without saving
-oas-patch apply api.yaml test-bundle --env development --dry-run
+oas-patch bundle apply api.yaml bundle.yaml --env development --dry-run
 
 # Test with variables
-oas-patch apply api.yaml config-bundle \
+oas-patch bundle apply api.yaml config-bundle.yaml \
   --var debug_mode=true \
   --var log_level=debug \
   --dry-run
@@ -101,18 +100,13 @@ oas-patch apply api.yaml config-bundle \
 #### Advanced Configuration
 
 ```bash
-# Custom configuration directory
-oas-patch apply api.yaml my-bundle \
-  --config ./custom-overlays \
-  --env production
-
 # Force JSON output format
-oas-patch apply api.yaml my-bundle \
+oas-patch bundle apply api.yaml bundle.yaml \
   --format json \
   -o api-bundle.json
 
 # Verbose mode with progress tracking
-oas-patch apply api.yaml large-bundle \
+oas-patch bundle apply api.yaml large-bundle.yaml \
   --env production \
   --verbose \
   -o production-api.yaml
@@ -141,234 +135,21 @@ Output format is determined by:
 | 1 | Error (bundle not found, overlay errors, etc.) |
 | 130 | Interrupted by user (Ctrl+C) |
 
-## list-bundles
-
-List all available overlay bundles in the configuration directory.
-
-### Syntax
-
-```bash
-oas-patch list-bundles [OPTIONS]
-```
-
-### Options
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--config` | `-c` | Configuration directory (default: overlays) |
-| `--verbose` | `-v` | Show detailed information |
-| `--help` |  | Show help message and exit |
-
-### Examples
-
-#### Basic Listing
-
-```bash
-# List all bundles
-oas-patch list-bundles
-
-# Output:
-# Available Bundles
-#   development-bundle
-#   production-bundle
-#   security-bundle
-```
-
-#### Detailed Information
-
-```bash
-# Show detailed bundle information
-oas-patch list-bundles --verbose
-```
-
-Example verbose output:
-```
-┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┓
-┃ Bundle Name        ┃ Description                     ┃ Overlays  ┃ Status     ┃
-┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━┩
-│ development-bundle │ Development environment config  │ 3         │ ✓ Valid    │
-│ production-bundle  │ Production environment config   │ 5         │ ✓ Valid    │
-│ security-bundle    │ Security enhancements          │ 2         │ ✓ Valid    │
-└────────────────────┴─────────────────────────────────┴───────────┴────────────┘
-```
-
-#### Custom Configuration Directory
-
-```bash
-# List bundles from custom directory
-oas-patch list-bundles --config ./my-overlays
-
-# Verbose listing with custom config
-oas-patch list-bundles --config ./project-configs --verbose
-```
-
-### Bundle Discovery
-
-The command discovers bundles by scanning for `bundle.yaml` files:
-
-```
-overlays/
-├── app-bundle/
-│   └── bundle.yaml     # Found: "app-bundle"
-├── security-bundle/
-│   └── bundle.yaml     # Found: "security-bundle"
-└── legacy/
-    └── old-config.yaml # Ignored: not named "bundle.yaml"
-```
-
-## list-environments
-
-List all available environment configurations.
-
-### Syntax
-
-```bash
-oas-patch list-environments [OPTIONS]
-```
-
-### Options
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--config` | `-c` | Configuration directory (default: overlays) |
-| `--verbose` | `-v` | Show detailed information |
-| `--help` |  | Show help message and exit |
-
-### Examples
-
-#### Basic Listing
-
-```bash
-# List all environments
-oas-patch list-environments
-
-# Output:
-# Available Environments
-#   development
-#   staging
-#   production
-```
-
-#### Detailed Information
-
-```bash
-# Show environment details
-oas-patch list-environments --verbose
-```
-
-Example verbose output:
-```
-┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┓
-┃ Environment   ┃ Description                          ┃ Variables ┃ Status     ┃
-┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━┩
-│ development   │ Development environment config       │ 5         │ ✓ Valid    │
-│ staging       │ Staging environment for testing      │ 7         │ ✓ Valid    │
-│ production    │ Production environment               │ 8         │ ✓ Valid    │
-└───────────────┴──────────────────────────────────────┴───────────┴────────────┘
-```
-
-### Environment Discovery
-
-Environments are discovered from:
-- `environments/` directory with `.yaml` files
-- Environment-specific subdirectories
-- Bundle-embedded environment configurations
-
-## info
-
-Show detailed information about a specific bundle.
-
-### Syntax
-
-```bash
-oas-patch info BUNDLE_NAME [OPTIONS]
-```
-
-### Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `BUNDLE_NAME` | Name of the bundle to inspect |
-
-### Options
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--config` | `-c` | Configuration directory (default: overlays) |
-| `--help` |  | Show help message and exit |
-
-### Examples
-
-#### Bundle Information
-
-```bash
-# Show bundle details
-oas-patch info my-bundle
-```
-
-Example output:
-```
-╭─────────────────────────── Bundle Information ───────────────────────────╮
-│                                                                           │
-│  📦 Bundle: my-bundle                                                     │
-│  📝 Description: Application deployment bundle for multiple environments  │
-│  🏷️  Version: 2.1.0                                                       │
-│                                                                           │
-│  📊 Statistics:                                                           │
-│    • Overlays: 4                                                         │
-│    • Variables: 6                                                        │
-│    • Environments: development, staging, production                      │
-│                                                                           │
-│  📄 Overlays:                                                             │
-│    1. base-config.yaml (All environments)                                │
-│       └── Base application configuration                                 │
-│    2. database.yaml (staging, production)                                │
-│       └── Database connection settings                                   │
-│    3. monitoring.yaml (production)                                       │
-│       └── Production monitoring configuration                            │
-│    4. debug.yaml (development)                                           │
-│       └── Development debugging features                                 │
-│                                                                           │
-│  🔧 Variables:                                                            │
-│    • api_version: v2.1                                                   │
-│    • base_url: https://api.example.com                                   │
-│    • timeout: 30                                                         │
-│    • retry_count: 3                                                      │
-│    • enable_cache: true                                                  │
-│    • log_level: info                                                     │
-│                                                                           │
-╰───────────────────────────────────────────────────────────────────────────╯
-```
-
-#### Bundle with Custom Config
-
-```bash
-# Show info from custom directory
-oas-patch info production-bundle --config ./deployments
-```
-
-## bundle-validate
+## bundle validate
 
 Validate bundle configuration and all associated overlay files.
 
 ### Syntax
 
 ```bash
-oas-patch bundle-validate BUNDLE_NAME [OPTIONS]
+oas-patch bundle validate BUNDLE_FILE [OPTIONS]
 ```
 
 ### Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `BUNDLE_NAME` | Name of the bundle to validate |
-
-### Options
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--config` | `-c` | Configuration directory (default: overlays) |
-| `--help` |  | Show help message and exit |
+| `BUNDLE_FILE` | Path to the bundle configuration file (e.g., bundle.yaml) |
 
 ### Examples
 
@@ -376,22 +157,15 @@ oas-patch bundle-validate BUNDLE_NAME [OPTIONS]
 
 ```bash
 # Validate bundle
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
 
 # Output on success:
-# ✓ Bundle 'my-bundle' validation successful
+# ✓ Bundle 'example-bundle' validation successful
 
 # Output on failure:
-# ✗ Bundle 'my-bundle' validation failed:
+# ✗ Bundle 'example-bundle' validation failed:
 #   - Overlay 'invalid.yaml': Missing required field 'overlay'
 #   - Variable 'undefined_var' referenced but not defined
-```
-
-#### Validation with Custom Config
-
-```bash
-# Validate from custom directory
-oas-patch bundle-validate production-bundle --config ./configs
 ```
 
 ### Validation Checks
@@ -405,7 +179,7 @@ The command validates:
 - Variable definitions
 
 #### Overlay Files
-- File existence
+- File existence (relative to bundle file)
 - Valid overlay format
 - JSONPath syntax
 - Template syntax (if using templates)
@@ -425,216 +199,99 @@ variables:
   api_version: "v1"
   base_url: "https://api.example.com"
 overlays:
-  - path: "base.yaml"
+  - path: "overlays/base.yaml"
     description: "Base configuration"
-  - path: "production.yaml"
+  - path: "overlays/production.yaml"
     environment: ["production"]
     variables:
       log_level: "error"
 ```
 
-## init
+## bundle init
 
-Create example overlay configuration to get started quickly.
+Create example overlay bundle in current directory.
 
 ### Syntax
 
 ```bash
-oas-patch init [OPTIONS]
+oas-patch bundle init [OPTIONS]
 ```
 
 ### Options
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--config` | `-c` | Configuration directory (default: overlays) |
-| `--force` |  | Overwrite existing configurations |
+| `--force` |  | Overwrite existing files |
 | `--help` |  | Show help message and exit |
 
 ### Examples
 
-#### Initialize Default Configuration
+#### Create Example Bundle
 
 ```bash
-# Create example configuration
-oas-patch init
+# Create example bundle in current directory
+oas-patch bundle init
 
 # Output:
-# Creating configuration structure in overlays
-# Example configuration created successfully!
-# Try the following commands:
-#   oas-patch list-bundles --config overlays
-#   oas-patch list-environments --config overlays
-#   oas-patch info example-bundle --config overlays
-#   oas-patch bundle-validate example-bundle --config overlays
-```
-
-#### Custom Directory
-
-```bash
-# Initialize in custom directory
-oas-patch init --config ./my-overlays
+# Example bundle created successfully!
+# Created files:
+#   - bundle.yaml (bundle configuration)
+#   - overlays/add-version.yaml (version overlay)
+#   - overlays/add-server.yaml (server overlay)
 ```
 
 #### Force Overwrite
 
 ```bash
-# Overwrite existing configuration
-oas-patch init --force
+# Overwrite existing files
+oas-patch bundle init --force
 ```
 
-### Generated Structure
+### Created Structure
 
-The `init` command creates this structure:
+The command creates:
 
 ```
-overlays/
-├── example-bundle/
-│   ├── bundle.yaml          # Bundle configuration
-│   ├── add-version.yaml     # Example overlay
-│   └── add-server.yaml      # Example overlay
-└── environments/
-    ├── staging.yaml         # Staging environment
-    └── production.yaml      # Production environment
+./
+├── bundle.yaml              # Bundle configuration
+└── overlays/
+    ├── add-version.yaml     # Version overlay example
+    └── add-server.yaml      # Server overlay example
 ```
 
-### Generated Files Content
+#### Example Bundle Configuration
 
-#### bundle.yaml
 ```yaml
-name: 'example-bundle'
-description: 'Example overlay bundle configuration'
-version: '1.0.0'
-variables:
-  api_version: 'v1'
-  base_url: 'https://api.example.com'
-overlays:
-  - path: 'add-version.yaml'
-    description: 'Add API version to info section'
-    environment: ['staging', 'production']
-  - path: 'add-server.yaml'
-    description: 'Add server configuration'
-    variables:
-      server_description: 'Example API Server'
-```
-
-#### Example Overlays
-- **add-version.yaml**: Adds API version information
-- **add-server.yaml**: Adds server configuration with templates
-
-#### Environment Files
-- **staging.yaml**: Staging environment variables
-- **production.yaml**: Production environment variables
-
-### Testing Generated Configuration
-
-```bash
-# After initialization, test the examples
-oas-patch list-bundles
-oas-patch info example-bundle
-oas-patch bundle-validate example-bundle
-
-# Apply to a test API (if you have one)
-oas-patch apply your-api.yaml example-bundle --env staging --dry-run
-```
-
-## Common Bundle Workflows
-
-### Development Workflow
-
-```bash
-# 1. Initialize configuration
-oas-patch init
-
-# 2. Create your bundle
-mkdir overlays/my-app-bundle
-cat > overlays/my-app-bundle/bundle.yaml << EOF
-name: "my-app-bundle"
-description: "My application bundle"
+name: "example-bundle"
+description: "Example overlay bundle configuration"
 version: "1.0.0"
+variables:
+  api_version: "v1"
+  base_url: "https://api.example.com"
 overlays:
-  - path: "base.yaml"
-EOF
-
-# 3. Validate bundle
-oas-patch bundle-validate my-app-bundle
-
-# 4. Test application
-oas-patch apply api.yaml my-app-bundle --dry-run
-
-# 5. Apply for real
-oas-patch apply api.yaml my-app-bundle -o output.yaml
-```
-
-### CI/CD Integration
-
-```bash
-#!/bin/bash
-# deploy.sh - Bundle deployment script
-
-BUNDLE_NAME=${1:-production-bundle}
-ENVIRONMENT=${2:-production}
-API_FILE=${3:-api.yaml}
-
-echo "Validating bundle..."
-if ! oas-patch bundle-validate "$BUNDLE_NAME"; then
-    echo "❌ Bundle validation failed"
-    exit 1
-fi
-
-echo "Applying bundle for $ENVIRONMENT..."
-oas-patch apply "$API_FILE" "$BUNDLE_NAME" \
-    --env "$ENVIRONMENT" \
-    --var build_number="$BUILD_NUMBER" \
-    --var git_commit="$GIT_COMMIT" \
-    -o "api-$ENVIRONMENT.yaml"
-
-echo "✅ Deployment complete: api-$ENVIRONMENT.yaml"
-```
-
-### Multi-Environment Deployment
-
-```bash
-#!/bin/bash
-# deploy-all-environments.sh
-
-BUNDLE_NAME=${1:-app-bundle}
-API_FILE=${2:-api.yaml}
-
-for env in development staging production; do
-    echo "🚀 Deploying to $env..."
-    
-    if oas-patch apply "$API_FILE" "$BUNDLE_NAME" \
-        --env "$env" \
-        --verbose \
-        -o "api-$env.yaml"; then
-        echo "✅ $env deployment successful"
-    else
-        echo "❌ $env deployment failed"
-        exit 1
-    fi
-done
-
-echo "🎉 All environments deployed successfully!"
-```
-
+  - path: "overlays/add-version.yaml"
+    description: "Add API version to info section"
+  - path: "overlays/add-server.yaml"
+    description: "Add server configuration"
+    variables:
+      server_description: "Example API Server"
 ## Troubleshooting
 
 ### Common Issues
 
-#### Bundle Not Found
+#### Bundle File Not Found
 
 ```bash
-$ oas-patch apply api.yaml missing-bundle
-Error: Bundle 'missing-bundle' not found in overlays directory
+$ oas-patch bundle apply api.yaml missing-bundle.yaml
+Error: Path 'missing-bundle.yaml' does not exist.
 ```
 
-**Solution**: Check bundle name and ensure `bundle.yaml` exists in the bundle directory.
+**Solution**: Check bundle file path and ensure the bundle.yaml file exists.
 
 #### Environment Not Found
 
 ```bash
-$ oas-patch apply api.yaml my-bundle --env missing-env
+$ oas-patch bundle apply api.yaml bundle.yaml --env missing-env
 Warning: No overlays found for specified environment
 ```
 
@@ -643,7 +300,7 @@ Warning: No overlays found for specified environment
 #### Template Errors
 
 ```bash
-$ oas-patch apply api.yaml my-bundle --var incomplete=
+$ oas-patch bundle apply api.yaml bundle.yaml --var incomplete=
 Error: Template processing failed: 'undefined_var' is undefined
 ```
 
@@ -653,26 +310,33 @@ Error: Template processing failed: 'undefined_var' is undefined
 
 ```bash
 # Debug variable issues with verbose mode
-oas-patch apply api.yaml my-bundle --env production --verbose
-
-# Check bundle info for variable requirements
-oas-patch info my-bundle
+oas-patch bundle apply api.yaml bundle.yaml --env production --verbose
 ```
 
 ### Debug Techniques
 
 ```bash
 # Use dry-run to preview changes
-oas-patch apply api.yaml my-bundle --env production --dry-run
+oas-patch bundle apply api.yaml bundle.yaml --env production --dry-run
 
 # Enable verbose mode for detailed output
-oas-patch apply api.yaml my-bundle --verbose
+oas-patch bundle apply api.yaml bundle.yaml --verbose
 
 # Validate bundle configuration
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
+```
 
-# Check bundle information
-oas-patch info my-bundle
+## Next Steps
+
+- [Validation Commands](validation-commands.md) - Additional validation options
+- [Multi-Environment Setup](../tutorials/multi-environment.md) - Hands-on bundle examples
+- [CI/CD Integration](../tutorials/cicd-integration.md) - Automated bundle deployment
+
+# Enable verbose mode for detailed output
+oas-patch bundle apply api.yaml my-bundle --verbose
+
+# Validate bundle configuration
+oas-patch bundle validate bundle.yaml
 ```
 
 ## Next Steps

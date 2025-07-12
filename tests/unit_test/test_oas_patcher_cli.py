@@ -156,32 +156,26 @@ def mock_enhanced_file_operations(mocker):
 
 
 # =============================================================================
-# APPLY COMMAND TESTS
+# BUNDLE APPLY COMMAND TESTS
 # =============================================================================
 
 
 def test_apply_command_basic_success(
     mock_enhanced_features, mock_enhanced_file_operations
 ):
-    """Test apply command with basic successful execution."""
-    # Setup mocks
-    from unittest.mock import MagicMock
+    """Test bundle apply command with basic successful execution."""
+    import tempfile
+    from pathlib import Path
 
-    bundle_config = MagicMock()
-    bundle_config.overlays = [MagicMock(path="test.yaml", variables=None)]
-    bundle_config.variables = {"test_var": "test_value"}
-
-    mock_enhanced_features["bundle_manager"].return_value.load_bundle.return_value = (
-        bundle_config
-    )
-    mock_enhanced_features["env_manager"].return_value.get_variables.return_value = {}
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value._resolve_overlay_path.return_value = "test.yaml"
-
+    # Mock load_file to return bundle config, OpenAPI doc, and overlay in the correct order
     mock_enhanced_file_operations["load_file"].side_effect = [
-        {"openapi": "3.0.0", "info": {"title": "Test API"}},  # OpenAPI doc
-        {"overlay": "1.0.0", "actions": []},  # Overlay
+        {  # Bundle config (loaded first)
+            "name": "test-bundle",
+            "overlays": [{"path": "overlays/test.yaml"}],
+            "variables": {"test_var": "test_value"}
+        },
+        {"openapi": "3.0.0", "info": {"title": "Test API"}},  # OpenAPI doc (loaded second)
+        {"overlay": "1.0.0", "actions": []},  # Overlay (loaded third)
     ]
     mock_enhanced_file_operations["apply_overlay"].return_value = {
         "openapi": "3.0.0",
@@ -194,44 +188,42 @@ def test_apply_command_basic_success(
         "actions": [],
     }
 
-    result = run_cli_with_args(
-        ["apply", "openapi.yaml", "test-bundle", "--output", "output.yaml"]
-    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        overlay_file = Path(temp_dir) / "overlays" / "test.yaml"
+        
+        # Create the files so they exist
+        overlay_file.parent.mkdir(exist_ok=True)
+        bundle_file.write_text("test")
+        overlay_file.write_text("test")
 
-    assert result.exit_code == 0
-    mock_enhanced_file_operations["save_file"].assert_called_once()
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.load_bundle.assert_called_once_with("test-bundle")
+        result = run_cli_with_args(
+            ["bundle", "apply", "openapi.yaml", str(bundle_file), "--output", "output.yaml"]
+        )
+
+        assert result.exit_code == 0
+        mock_enhanced_file_operations["save_file"].assert_called_once()
 
 
 def test_apply_command_with_environment(
     mock_enhanced_features, mock_enhanced_file_operations
 ):
-    """Test apply command with environment specified."""
-    # Setup mocks
-    from unittest.mock import MagicMock
+    """Test bundle apply command with environment specified."""
+    import tempfile
+    from pathlib import Path
 
-    bundle_config = MagicMock()
-    bundle_config.overlays = [MagicMock(path="test.yaml", variables=None)]
-    bundle_config.variables = {"bundle_var": "value"}
-
-    mock_enhanced_features["bundle_manager"].return_value.load_bundle.return_value = (
-        bundle_config
-    )
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_overlays_for_environment.return_value = bundle_config.overlays
-    mock_enhanced_features["env_manager"].return_value.get_variables.return_value = {
-        "env_var": "env_value"
-    }
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value._resolve_overlay_path.return_value = "test.yaml"
-
+    # Mock load_file to return bundle config, OpenAPI doc, and overlay in the correct order  
     mock_enhanced_file_operations["load_file"].side_effect = [
-        {"openapi": "3.0.0", "info": {"title": "Test API"}},
-        {"overlay": "1.0.0", "actions": []},
+        {  # Bundle config (loaded first)
+            "name": "test-bundle",
+            "overlays": [
+                {"path": "overlays/test.yaml", "environment": ["staging", "production"]},
+                {"path": "overlays/dev.yaml", "environment": ["development"]}
+            ],
+            "variables": {"bundle_var": "value"}
+        },
+        {"openapi": "3.0.0", "info": {"title": "Test API"}},  # OpenAPI doc (loaded second)
+        {"overlay": "1.0.0", "actions": []},  # Overlay (loaded third)
     ]
     mock_enhanced_file_operations["apply_overlay"].return_value = {
         "openapi": "3.0.0",
@@ -244,50 +236,49 @@ def test_apply_command_with_environment(
         "actions": [],
     }
 
-    result = run_cli_with_args(
-        [
-            "apply",
-            "openapi.yaml",
-            "test-bundle",
-            "--env",
-            "staging",
-            "--output",
-            "output.yaml",
-        ]
-    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        overlay_file = Path(temp_dir) / "overlays" / "test.yaml"
+        
+        # Create the files so they exist
+        overlay_file.parent.mkdir(exist_ok=True)
+        bundle_file.write_text("test")
+        overlay_file.write_text("test")
 
-    assert result.exit_code == 0
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_overlays_for_environment.assert_called_once_with(
-        "test-bundle", "staging"
-    )
+        result = run_cli_with_args(
+            [
+                "bundle",
+                "apply",
+                "openapi.yaml",
+                str(bundle_file),
+                "--env",
+                "staging",
+                "--output",
+                "output.yaml",
+            ]
+        )
+
+        assert result.exit_code == 0
 
 
 def test_apply_command_with_variables(
     mock_enhanced_features, mock_enhanced_file_operations
 ):
-    """Test apply command with CLI variables."""
-    # Setup mocks
-    from unittest.mock import MagicMock
+    """Test bundle apply command with CLI variables."""
+    import tempfile
+    from pathlib import Path
 
-    bundle_config = MagicMock()
-    bundle_config.overlays = [
-        MagicMock(path="test.yaml", variables={"overlay_var": "overlay_value"})
-    ]
-    bundle_config.variables = {"bundle_var": "bundle_value"}
-
-    mock_enhanced_features["bundle_manager"].return_value.load_bundle.return_value = (
-        bundle_config
-    )
-    mock_enhanced_features["env_manager"].return_value.get_variables.return_value = {}
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value._resolve_overlay_path.return_value = "test.yaml"
-
+    # Mock load_file to return bundle config, OpenAPI doc, and overlay in the correct order
     mock_enhanced_file_operations["load_file"].side_effect = [
-        {"openapi": "3.0.0", "info": {"title": "Test API"}},
-        {"overlay": "1.0.0", "actions": []},
+        {  # Bundle config (loaded first)
+            "name": "test-bundle",
+            "overlays": [
+                {"path": "overlays/test.yaml", "variables": {"overlay_var": "overlay_value"}}
+            ],
+            "variables": {"bundle_var": "bundle_value"}
+        },
+        {"openapi": "3.0.0", "info": {"title": "Test API"}},  # OpenAPI doc (loaded second)
+        {"overlay": "1.0.0", "actions": []},  # Overlay (loaded third)
     ]
     mock_enhanced_file_operations["apply_overlay"].return_value = {
         "openapi": "3.0.0",
@@ -300,46 +291,50 @@ def test_apply_command_with_variables(
         "actions": [],
     }
 
-    result = run_cli_with_args(
-        [
-            "apply",
-            "openapi.yaml",
-            "test-bundle",
-            "--var",
-            "cli_var=cli_value",
-            "--var",
-            "another_var=another_value",
-            "--output",
-            "output.yaml",
-        ]
-    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        overlay_file = Path(temp_dir) / "overlays" / "test.yaml"
+        
+        # Create the files so they exist
+        overlay_file.parent.mkdir(exist_ok=True)
+        bundle_file.write_text("test")
+        overlay_file.write_text("test")
 
-    assert result.exit_code == 0
-    mock_enhanced_features[
-        "template_engine"
-    ].return_value.process_overlay_data.assert_called()
+        result = run_cli_with_args(
+            [
+                "bundle",
+                "apply",
+                "openapi.yaml",
+                str(bundle_file),
+                "--var",
+                "cli_var=cli_value",
+                "--var",
+                "another_var=another_value",
+                "--output",
+                "output.yaml",
+            ]
+        )
+
+        assert result.exit_code == 0
+        mock_enhanced_features[
+            "template_engine"
+        ].return_value.process_overlay_data.assert_called()
 
 
 def test_apply_command_dry_run(mock_enhanced_features, mock_enhanced_file_operations):
-    """Test apply command with dry run flag."""
-    # Setup mocks
-    from unittest.mock import MagicMock
+    """Test bundle apply command with dry run flag."""
+    import tempfile
+    from pathlib import Path
 
-    bundle_config = MagicMock()
-    bundle_config.overlays = [MagicMock(path="test.yaml", variables=None)]
-    bundle_config.variables = {}
-
-    mock_enhanced_features["bundle_manager"].return_value.load_bundle.return_value = (
-        bundle_config
-    )
-    mock_enhanced_features["env_manager"].return_value.get_variables.return_value = {}
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value._resolve_overlay_path.return_value = "test.yaml"
-
+    # Mock load_file to return bundle config, OpenAPI doc, and overlay in the correct order
     mock_enhanced_file_operations["load_file"].side_effect = [
-        {"openapi": "3.0.0", "info": {"title": "Test API"}},
-        {"overlay": "1.0.0", "actions": []},
+        {  # Bundle config (loaded first)
+            "name": "test-bundle",
+            "overlays": [{"path": "overlays/test.yaml"}],
+            "variables": {}
+        },
+        {"openapi": "3.0.0", "info": {"title": "Test API"}},  # OpenAPI doc (loaded second)
+        {"overlay": "1.0.0", "actions": []},  # Overlay (loaded third)
     ]
     mock_enhanced_file_operations["apply_overlay"].return_value = {
         "openapi": "3.0.0",
@@ -352,339 +347,230 @@ def test_apply_command_dry_run(mock_enhanced_features, mock_enhanced_file_operat
         "actions": [],
     }
 
-    result = run_cli_with_args(["apply", "openapi.yaml", "test-bundle", "--dry-run"])
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        overlay_file = Path(temp_dir) / "overlays" / "test.yaml"
+        
+        # Create the files so they exist
+        overlay_file.parent.mkdir(exist_ok=True)
+        bundle_file.write_text("test")
+        overlay_file.write_text("test")
 
-    assert result.exit_code == 0
-    # Verify save_file was NOT called in dry run
-    mock_enhanced_file_operations["save_file"].assert_not_called()
+        result = run_cli_with_args(["bundle", "apply", "openapi.yaml", str(bundle_file), "--dry-run"])
+
+        assert result.exit_code == 0
+        # Verify save_file was NOT called in dry run
+        mock_enhanced_file_operations["save_file"].assert_not_called()
 
 
 def test_apply_command_missing_openapi_file(
     mock_enhanced_features, mock_enhanced_file_operations
 ):
-    """Test apply command with missing OpenAPI file."""
+    """Test bundle apply command with missing OpenAPI file."""
+    import tempfile
+    from pathlib import Path
+    
     mock_enhanced_file_operations["load_file"].side_effect = FileNotFoundError(
         "File not found"
     )
 
-    result = run_cli_with_args(["apply", "missing.yaml", "test-bundle"])
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("test")
 
-    assert result.exit_code == 1
+        result = run_cli_with_args(["bundle", "apply", "missing.yaml", str(bundle_file)])
+
+        assert result.exit_code == 1
 
 
 def test_apply_command_missing_bundle(
     mock_enhanced_features, mock_enhanced_file_operations
 ):
-    """Test apply command with missing bundle."""
-    mock_enhanced_file_operations["load_file"].return_value = {"openapi": "3.0.0"}
-    mock_enhanced_features["bundle_manager"].return_value.load_bundle.side_effect = (
-        FileNotFoundError("Bundle not found")
-    )
+    """Test bundle apply command with missing bundle."""
+    # This test should trigger a Click error because bundle file doesn't exist
+    result = run_cli_with_args(["bundle", "apply", "openapi.yaml", "missing-bundle.yaml"])
 
-    result = run_cli_with_args(["apply", "openapi.yaml", "missing-bundle"])
-
-    assert result.exit_code == 1
+    assert result.exit_code == 2  # Click error for missing file
 
 
 # =============================================================================
-# LIST-BUNDLES COMMAND TESTS
+# BUNDLE VALIDATE COMMAND TESTS
 # =============================================================================
 
 
-def test_list_bundles_command_basic(mock_enhanced_features):
-    """Test basic list-bundles command."""
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.discover_bundles.return_value = ["bundle1", "bundle2", "bundle3"]
-
-    result = run_cli_with_args(["list-bundles"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].print_header.assert_called_once_with(
-        "Available Bundles"
-    )
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  bundle1")
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  bundle2")
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  bundle3")
-
-
-def test_list_bundles_command_verbose(mock_enhanced_features):
-    """Test list-bundles command with verbose flag."""
-    mock_bundles_info = [
-        {
-            "name": "bundle1",
-            "description": "Test bundle 1",
-            "overlays": ["overlay1.yaml"],
-            "validation": {"valid": True, "errors": [], "warnings": []},
-        }
-    ]
-
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.discover_bundles.return_value = ["bundle1"]
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_bundle_info.return_value = mock_bundles_info[0]
-
-    result = run_cli_with_args(["list-bundles", "--verbose"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].console.print.assert_called()
-
-
-def test_list_bundles_command_no_bundles(mock_enhanced_features):
-    """Test list-bundles command when no bundles are found."""
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.discover_bundles.return_value = []
-
-    result = run_cli_with_args(["list-bundles"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].print_info.assert_called_with(
-        "No bundles found in overlays"
-    )
-
-
-def test_list_bundles_command_error(mock_enhanced_features):
-    """Test list-bundles command with error."""
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.discover_bundles.side_effect = Exception(
-        "Failed to discover bundles"
-    )
-
-    result = run_cli_with_args(["list-bundles"])
-
-    assert result.exit_code == 1
-
-
-# =============================================================================
-# LIST-ENVIRONMENTS COMMAND TESTS
-# =============================================================================
-
-
-def test_list_environments_command_basic(mock_enhanced_features):
-    """Test basic list-environments command."""
-    mock_enhanced_features[
-        "env_manager"
-    ].return_value.discover_environments.return_value = ["dev", "staging", "prod"]
-
-    result = run_cli_with_args(["list-environments"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].print_header.assert_called_once_with(
-        "Available Environments"
-    )
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  dev")
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  staging")
-    mock_enhanced_features["cli_utils"].print_info.assert_any_call("  prod")
-
-
-def test_list_environments_command_verbose(mock_enhanced_features):
-    """Test list-environments command with verbose flag."""
-    mock_env_info = [
-        {
-            "name": "dev",
-            "description": "Development environment",
-            "variables": {"debug": "true"},
-        },
-        {
-            "name": "prod",
-            "description": "Production environment",
-            "variables": {"debug": "false"},
-        },
-    ]
-
-    mock_enhanced_features[
-        "env_manager"
-    ].return_value.list_environments_info.return_value = mock_env_info
-
-    result = run_cli_with_args(["list-environments", "--verbose"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].console.print.assert_called()
-
-
-def test_list_environments_command_no_environments(mock_enhanced_features):
-    """Test list-environments command when no environments are found."""
-    mock_enhanced_features[
-        "env_manager"
-    ].return_value.discover_environments.return_value = []
-
-    result = run_cli_with_args(["list-environments"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features["cli_utils"].print_info.assert_called_with(
-        "No environments found in overlays"
-    )
-
-
-# =============================================================================
-# BUNDLE-VALIDATE COMMAND TESTS
-# =============================================================================
-
-
-def test_bundle_validate_command_success(mock_enhanced_features):
-    """Test bundle-validate command with valid bundle."""
-    mock_validation_result = {"valid": True, "errors": [], "warnings": []}
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.validate_bundle.return_value = mock_validation_result
-
-    result = run_cli_with_args(["bundle-validate", "test-bundle"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.validate_bundle.assert_called_once_with("test-bundle")
-
-
-def test_bundle_validate_command_failure(mock_enhanced_features):
-    """Test bundle-validate command with invalid bundle."""
-    mock_validation_result = {
-        "valid": False,
-        "errors": ["Error 1", "Error 2"],
-        "warnings": ["Warning 1"],
-    }
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.validate_bundle.return_value = mock_validation_result
-
-    result = run_cli_with_args(["bundle-validate", "invalid-bundle"])
-
-    assert result.exit_code == 1
-
-
-def test_bundle_validate_command_exception(mock_enhanced_features):
-    """Test bundle-validate command with exception."""
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.validate_bundle.side_effect = Exception("Validation error")
-
-    result = run_cli_with_args(["bundle-validate", "test-bundle"])
-
-    assert result.exit_code == 1
-
-
-# =============================================================================
-# INFO COMMAND TESTS
-# =============================================================================
-
-
-def test_info_command_success(mock_enhanced_features):
-    """Test info command with valid bundle."""
-    mock_bundle_info = {
-        "name": "test-bundle",
-        "description": "Test bundle description",
-        "version": "1.0.0",
-        "overlays": ["overlay1.yaml", "overlay2.yaml"],
-        "variables": {"var1": "value1"},
-        "validation": {"valid": True, "errors": [], "warnings": []},
-    }
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_bundle_info.return_value = mock_bundle_info
-
-    result = run_cli_with_args(["info", "test-bundle"])
-
-    assert result.exit_code == 0
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_bundle_info.assert_called_once_with("test-bundle")
-    mock_enhanced_features["cli_utils"].console.print.assert_called()
-
-
-def test_info_command_exception(mock_enhanced_features):
-    """Test info command with exception."""
-    mock_enhanced_features[
-        "bundle_manager"
-    ].return_value.get_bundle_info.side_effect = Exception("Bundle not found")
-
-    result = run_cli_with_args(["info", "missing-bundle"])
-
-    assert result.exit_code == 1
-
-
-# =============================================================================
-# INIT COMMAND TESTS
-# =============================================================================
-
-
-def test_init_command_new_directory(mock_enhanced_features, mocker):
-    """Test init command with new directory."""
+def test_bundle_validate_command_success(mock_enhanced_features, mocker):
+    """Test bundle validate command with valid bundle file."""
     import tempfile
     from pathlib import Path
 
+    # Mock load_file to return valid bundle configuration
+    mock_load_file = mocker.patch("oas_patch.oas_patcher_cli.load_file")
+    mock_load_file.side_effect = [
+        # Bundle configuration
+        {
+            "name": "test-bundle",
+            "overlays": [
+                {"path": "overlays/test.yaml"}
+            ]
+        },
+        # Overlay file
+        {"overlay": "1.0.0", "actions": []}
+    ]
+
     with tempfile.TemporaryDirectory() as temp_dir:
-        config_path = Path(temp_dir) / "test-config"
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        overlay_file = Path(temp_dir) / "overlays" / "test.yaml"
+        
+        # Create the files so they exist
+        bundle_file.parent.mkdir(exist_ok=True)
+        overlay_file.parent.mkdir(exist_ok=True)
+        bundle_file.write_text("test")
+        overlay_file.write_text("test")
 
-        # Mock yaml.dump to avoid actual file writing in test
-        mock_yaml_dump = mocker.patch("oas_patch.oas_patcher_cli.yaml.dump")
-
-        result = run_cli_with_args(["init", "--config", str(config_path)])
+        result = run_cli_with_args(["bundle", "validate", str(bundle_file)])
 
         assert result.exit_code == 0
-        assert config_path.exists()
-        assert (config_path / "environments").exists()
-        assert (config_path / "example-bundle").exists()
-
-        # Verify yaml.dump was called for bundle and environment files
-        assert (
-            mock_yaml_dump.call_count >= 4
-        )  # bundle.yaml + 2 overlays + 2 environments
 
 
-def test_init_command_existing_directory_no_force(mock_enhanced_features, mocker):
-    """Test init command with existing directory without force."""
+def test_bundle_validate_command_missing_overlay(mock_enhanced_features, mocker):
+    """Test bundle validate command with missing overlay file."""
     import tempfile
     from pathlib import Path
 
+    # Mock load_file to return bundle configuration with missing overlay
+    mock_load_file = mocker.patch("oas_patch.oas_patcher_cli.load_file")
+    mock_load_file.return_value = {
+        "name": "test-bundle",
+        "overlays": [
+            {"path": "overlays/missing.yaml"}
+        ]
+    }
+
     with tempfile.TemporaryDirectory() as temp_dir:
-        config_path = Path(temp_dir)
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("test")
 
-        # Pre-create a file to make directory non-empty
-        (config_path / "existing.txt").write_text("test")
+        result = run_cli_with_args(["bundle", "validate", str(bundle_file)])
 
+        assert result.exit_code == 1
+
+
+def test_bundle_validate_command_invalid_bundle_structure(mock_enhanced_features, mocker):
+    """Test bundle validate command with invalid bundle structure."""
+    import tempfile
+    from pathlib import Path
+
+    # Mock load_file to return invalid bundle configuration (missing required fields)
+    mock_load_file = mocker.patch("oas_patch.oas_patcher_cli.load_file")
+    mock_load_file.return_value = {
+        "description": "Missing name and overlays"
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("test")
+
+        result = run_cli_with_args(["bundle", "validate", str(bundle_file)])
+
+        assert result.exit_code == 1
+
+# =============================================================================
+# BUNDLE INIT COMMAND TESTS
+# =============================================================================
+
+
+# BUNDLE INIT COMMAND TESTS
+# =============================================================================
+
+
+def test_init_command_creates_files(mock_enhanced_features, mocker):
+    """Test bundle init command creates files in current directory."""
+    import tempfile
+    from pathlib import Path
+    import os
+
+    # Mock yaml.dump to avoid actual file writing in test
+    mock_yaml_dump = mocker.patch("oas_patch.oas_patcher_cli.yaml.dump")
+    
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Change to temp directory
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(temp_dir)
+            
+            result = run_cli_with_args(["bundle", "init"])
+
+            assert result.exit_code == 0
+            
+            # Check that files would be created (yaml.dump called)
+            assert mock_yaml_dump.call_count == 3  # bundle.yaml + 2 overlays
+            
+        finally:
+            os.chdir(original_cwd)
+
+
+def test_init_command_existing_files_no_force(mock_enhanced_features, mocker):
+    """Test bundle init command with existing files without force."""
+    import tempfile
+    from pathlib import Path
+    import os
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Pre-create files
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("existing")
+        
         # Mock the confirm_action to return False (user says no)
         mock_enhanced_features["cli_utils"].confirm_action.return_value = False
 
-        result = run_cli_with_args(["init", "--config", str(config_path)])
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(temp_dir)
+            
+            result = run_cli_with_args(["bundle", "init"])
 
-        assert result.exit_code == 0
-        mock_enhanced_features["cli_utils"].print_info.assert_called_with(
-            "Initialization cancelled"
-        )
+            assert result.exit_code == 0
+            mock_enhanced_features["cli_utils"].print_info.assert_called_with(
+                "Initialization cancelled"
+            )
+        finally:
+            os.chdir(original_cwd)
 
 
-def test_init_command_existing_directory_with_force(mock_enhanced_features, mocker):
-    """Test init command with existing directory with force."""
+def test_init_command_existing_files_with_force(mock_enhanced_features, mocker):
+    """Test bundle init command with existing files with force."""
     import tempfile
     from pathlib import Path
+    import os
+
+    # Mock yaml.dump to avoid actual file writing in test
+    mock_yaml_dump = mocker.patch("oas_patch.oas_patcher_cli.yaml.dump")
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        config_path = Path(temp_dir)
+        # Pre-create files
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("existing")
 
-        # Mock yaml.dump to avoid actual file writing in test
-        mock_yaml_dump = mocker.patch("oas_patch.oas_patcher_cli.yaml.dump")
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(temp_dir)
+            
+            result = run_cli_with_args(["bundle", "init", "--force"])
 
-        result = run_cli_with_args(["init", "--config", str(config_path), "--force"])
-
-        assert result.exit_code == 0
-        assert (config_path / "example-bundle").exists()
-
-        # Verify yaml.dump was called for bundle and environment files
-        assert mock_yaml_dump.call_count >= 4
+            assert result.exit_code == 0
+            # Verify yaml.dump was called for bundle and overlay files
+            assert mock_yaml_dump.call_count == 3  # bundle.yaml + 2 overlays
+        finally:
+            os.chdir(original_cwd)
 
 
 def test_init_command_exception(mock_enhanced_features, mocker):
-    """Test init command with exception."""
-    # Mock Path to raise an exception
-    mocker.patch("oas_patch.oas_patcher_cli.Path").side_effect = Exception(
-        "Permission denied"
-    )
+    """Test bundle init command with exception."""
+    # Mock Path to raise an exception when creating overlays directory
+    mock_path = mocker.patch("oas_patch.oas_patcher_cli.Path")
+    mock_path.return_value.mkdir.side_effect = Exception("Permission denied")
 
-    result = run_cli_with_args(["init"])
+    result = run_cli_with_args(["bundle", "init"])
 
     assert result.exit_code == 1
 
@@ -696,20 +582,27 @@ def test_init_command_exception(mock_enhanced_features, mocker):
 
 def test_enhanced_commands_require_dependencies(mocker):
     """Test that enhanced commands check for dependencies."""
+    import tempfile
+    from pathlib import Path
+    
     # Mock ENHANCED_FEATURES_AVAILABLE to False
     mocker.patch("oas_patch.oas_patcher_cli.ENHANCED_FEATURES_AVAILABLE", False)
 
-    result = run_cli_with_args(["apply", "test.yaml", "test-bundle"])
+    with tempfile.TemporaryDirectory() as temp_dir:
+        bundle_file = Path(temp_dir) / "bundle.yaml"
+        bundle_file.write_text("test")
 
-    assert result.exit_code == 1
-    assert "Enhanced features require additional dependencies" in result.output
+        result = run_cli_with_args(["bundle", "apply", "test.yaml", str(bundle_file)])
+
+        assert result.exit_code == 1
+        assert "Enhanced features require additional dependencies" in result.output
 
 
 def test_enhanced_commands_dependency_message(mocker):
     """Test enhanced commands show helpful dependency installation message."""
     mocker.patch("oas_patch.oas_patcher_cli.ENHANCED_FEATURES_AVAILABLE", False)
 
-    result = run_cli_with_args(["list-bundles"])
+    result = run_cli_with_args(["bundle", "init"])
 
     assert result.exit_code == 1
     assert "pip install Jinja2 rich click" in result.output

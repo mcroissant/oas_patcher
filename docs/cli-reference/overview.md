@@ -12,18 +12,9 @@ The OAS Patcher CLI is organized into several command categories:
 - **validate** - Validate overlay documents
 
 ### Bundle Management Commands (Enhanced)
-- **apply** - Apply overlay bundles to OpenAPI documents
-- **list-bundles** - List available overlay bundles
-- **info** - Show detailed bundle information
-- **bundle-validate** - Validate bundle configurations
-
-### Environment Commands (Enhanced)
-- **list-environments** - List available environments
-- **init** - Initialize example configuration
-
-### Utility Commands
-- **--version** - Show version information
-- **--help** - Show help information
+- **bundle apply** - Apply overlay bundles to OpenAPI documents
+- **bundle validate** - Validate bundle configurations
+- **bundle init** - Create example overlay bundle
 
 ## Global Options
 
@@ -70,23 +61,23 @@ oas-patch validate my-overlay.yaml
 
 ```bash
 # Apply a bundle
-oas-patch apply api.yaml my-bundle -e production -o output.yaml
+oas-patch bundle apply api.yaml bundle.yaml -e production -o output.yaml
 
-# List available bundles
-oas-patch list-bundles
+# Create example bundle
+oas-patch bundle init
 
-# Get bundle information
-oas-patch info my-bundle
+# Validate bundle configuration
+oas-patch bundle validate bundle.yaml
 ```
 
 ### Environment-Specific Deployment
 
 ```bash
 # Apply bundle for development
-oas-patch apply api.yaml my-bundle --env development
+oas-patch bundle apply api.yaml bundle.yaml --env development
 
 # Apply bundle for production with variables
-oas-patch apply api.yaml my-bundle --env production \
+oas-patch bundle apply api.yaml bundle.yaml --env production \
   --var api_url=https://api.example.com \
   --var version=v2.0
 ```
@@ -156,26 +147,26 @@ overlays/                    # Default config directory
 
 ```bash
 # Initialize configuration
-oas-patch init
+oas-patch bundle init
 
 # Validate bundle
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
 
 # Test bundle application
-oas-patch apply api.yaml my-bundle --env development --dry-run
+oas-patch bundle apply api.yaml bundle.yaml --env development --dry-run
 
 # Apply bundle
-oas-patch apply api.yaml my-bundle --env development -o api-dev.yaml
+oas-patch bundle apply api.yaml bundle.yaml --env development -o api-dev.yaml
 ```
 
 ### CI/CD Workflow
 
 ```bash
 # Validate all configurations
-oas-patch bundle-validate production-bundle
+oas-patch bundle validate bundle.yaml
 
 # Apply production configuration
-oas-patch apply base-api.yaml production-bundle \
+oas-patch bundle apply base-api.yaml production-bundle.yaml \
   --env production \
   --var build_number=$BUILD_NUMBER \
   --var git_commit=$GIT_COMMIT \
@@ -190,7 +181,7 @@ oas-patch validate api-production.yaml
 ```bash
 # Generate configurations for all environments
 for env in development staging production; do
-    oas-patch apply api.yaml app-bundle \
+    oas-patch bundle apply api.yaml bundle.yaml \
       --env $env \
       -o api-$env.yaml
 done
@@ -238,7 +229,7 @@ oas-patch --help
 
 # Command-specific help
 oas-patch overlay --help
-oas-patch apply --help
+oas-patch bundle apply --help
 
 # List all commands
 oas-patch --help

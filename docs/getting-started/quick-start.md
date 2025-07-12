@@ -69,7 +69,7 @@ actions:
           description: Production server
         - url: https://api-backup.petstore.com
           description: Backup production server
-  
+
   # Update API info for production
   - target: "$.info"
     update:
@@ -79,7 +79,7 @@ actions:
         name: API Support
         url: https://petstore.com/support
         email: api-support@petstore.com
-  
+
   # Add security scheme
   - target: "$.components"
     remove: true
@@ -92,9 +92,9 @@ actions:
             in: header
             name: X-API-Key
             description: API key for production access
-  
+
   # Add security requirement to the GET /pets endpoint
-  - target: "$.paths./pets.get"
+  - target: "$.paths.['/pets'].get"
     update:
       security:
         - ApiKeyAuth: []
@@ -129,17 +129,10 @@ info:
     name: API Support
     url: https://petstore.com/support
     email: api-support@petstore.com
-servers:
-  - url: https://api.petstore.com
-    description: Production server
-  - url: https://api-backup.petstore.com
-    description: Backup production server
 paths:
   /pets:
     get:
       summary: List all pets
-      security:
-        - ApiKeyAuth: []
       responses:
         '200':
           description: A list of pets
@@ -156,7 +149,17 @@ paths:
                       type: string
                     status:
                       type: string
-                      enum: [available, pending, sold]
+                      enum:
+                      - available
+                      - pending
+                      - sold
+      security:
+      - ApiKeyAuth: []
+servers:
+- url: https://api.petstore.com
+  description: Production server
+- url: https://api-backup.petstore.com
+  description: Backup production server
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -164,6 +167,7 @@ components:
       in: header
       name: X-API-Key
       description: API key for production access
+
 ```
 
 ### Key Changes Applied
@@ -180,9 +184,6 @@ Verify that your overlay was applied correctly:
 ```bash
 # Validate the original overlay file
 oas-patch validate production-overlay.yaml
-
-# Check if the result is valid OpenAPI
-oas-patch validate petstore-production.yaml --format yaml
 ```
 
 ## Common CLI Commands
@@ -215,7 +216,7 @@ oas-patch diff original.yaml modified.yaml
 # Validate overlay syntax
 oas-patch validate overlay.yaml
 
-# Validate with different output formats
+# Validate with different error output formats
 oas-patch validate overlay.yaml --format yaml
 oas-patch validate overlay.yaml --format log
 ```
@@ -244,7 +245,7 @@ The overlay you created uses several types of actions:
 - `"$"` - Root of the document
 - `"$.servers"` - The servers array
 - `"$.info"` - The info object
-- `"$.paths./pets.get"` - Specific endpoint operation
+- `"$.paths.['/pets'].get"` - Specific endpoint operation
 
 ## Next Steps
 

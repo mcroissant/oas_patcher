@@ -23,7 +23,7 @@ info:
 actions:
   - target: "$.info.version"
     update: "2.0.0"
-  - target: "$.paths./users.get.summary"
+  - target: "$.paths.['/users'].get.summary"
     update: "Retrieve all users"
 ```
 
@@ -59,7 +59,7 @@ Removes the element at the specified target:
 
 ```yaml
 actions:
-  - target: "$.paths./deprecated-endpoint"
+  - target: "$.paths.['/deprecated-endpoint']"
     remove: true
 ```
 
@@ -69,12 +69,14 @@ You can update complex objects and arrays:
 
 ```yaml
 actions:
-  - target: "$.components.securitySchemes"
+  - target: "$"
     update:
-      BearerAuth:
-        type: http
-        scheme: bearer
-        bearerFormat: JWT
+      components:
+        securitySchemes:
+          BearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
 ```
 
 ## JSONPath Targeting
@@ -82,7 +84,7 @@ actions:
 Overlays use JSONPath expressions to target specific parts of the OpenAPI document:
 
 - `$.info.version` - Targets the version field in the info object
-- `$.paths./users.get` - Targets the GET operation on the /users path
+- `$.paths.['/users'].get` - Targets the GET operation on the /users path
 - `$.components.schemas.User.properties.email` - Targets a specific schema property
 
 ## Common Use Cases
@@ -99,14 +101,18 @@ actions:
 
 ```yaml
 actions:
-  - target: "$.components.securitySchemes.ApiKeyAuth"
+  - target: "$"
     update:
-      type: apiKey
-      in: header
-      name: X-API-Key
-  - target: "$.security"
+      components:
+        securitySchemes:
+          ApiKeyAuth:
+            type: apiKey
+            in: header
+            name: X-API-Key
+  - target: "$.paths.['/users'].get"
     update:
-      - ApiKeyAuth: []
+      security:
+        - ApiKeyAuth: []
 ```
 
 ### Environment-Specific URLs
@@ -119,62 +125,15 @@ actions:
         description: "Staging server"
 ```
 
-### Adding Response Examples
-
-```yaml
-actions:
-  - target: "$.paths./users.get.responses.200.content.application/json.example"
-    update:
-      users:
-        - id: 1
-          name: "John Doe"
-          email: "john@example.com"
-```
-
-## Best Practices
-
-### 1. Descriptive Overlay Names
-
-Use clear, descriptive names for your overlays:
-
-```yaml
-info:
-  title: "Production Environment Configuration"
-  description: "Applies production-specific settings including HTTPS URLs and security requirements"
-```
-
-### 2. Atomic Changes
-
-Keep each overlay focused on a specific type of change:
-- Separate overlays for version updates, security changes, and environment configuration
-- Avoid mixing unrelated modifications in a single overlay
-
-### 3. Documentation
-
-Always include descriptions for your actions:
-
-```yaml
-actions:
-  - target: "$.info.version"
-    update: "2.0.0"
-    description: "Bump version for new major release"
-```
-
-### 4. Target Validation
-
-Ensure your JSONPath targets are correct:
-- Test overlays against sample OpenAPI documents
-- Use the validation command to check overlay syntax
-- Verify targets exist in your OpenAPI specification
 
 ## Working with Arrays
 
-When working with arrays, be specific about targeting:
+If the array exists you can simply call update action to add a value :
 
 ```yaml
 # Add a new server to the existing servers array
 actions:
-  - target: "$.servers[1]"
+  - target: "$.servers"
     update:
       url: "https://api-v2.example.com"
       description: "Version 2 API"

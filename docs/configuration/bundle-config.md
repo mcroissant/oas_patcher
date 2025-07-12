@@ -394,7 +394,7 @@ properties:
 
 ```bash
 # Validate bundle configuration
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
 
 # Validate specific bundle file
 oas-patch validate bundles/my-bundle/bundle.yaml

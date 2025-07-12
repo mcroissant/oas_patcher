@@ -240,7 +240,7 @@ echo "  Failed files: $failed_files"
 echo "  Report saved: $REPORT_FILE"
 ```
 
-## bundle-validate
+## bundle validate
 
 Validate bundle configuration and all associated overlay files. This is covered in detail in [Bundle Commands](bundle-commands.md#bundle-validate).
 
@@ -248,10 +248,10 @@ Validate bundle configuration and all associated overlay files. This is covered 
 
 ```bash
 # Validate bundle and all its overlays
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
 
-# Validate with custom config directory
-oas-patch bundle-validate my-bundle --config ./custom-overlays
+# Validate bundle from any location
+oas-patch bundle validate ./custom-overlays/bundle.yaml
 ```
 
 ## Generated API Validation
@@ -267,7 +267,7 @@ npm install -g spectral-cli
 pip install openapi-spec-validator
 
 # Generate and validate
-oas-patch apply api.yaml my-bundle -o generated-api.yaml
+oas-patch bundle apply api.yaml bundle.yaml -o generated-api.yaml
 
 # Validate with different tools
 swagger-parser validate generated-api.yaml
@@ -292,7 +292,7 @@ for env in development staging production; do
     output_file="api-$env.yaml"
     
     # Generate API
-    if oas-patch apply "$BASE_API" "$BUNDLE_NAME" \
+    if oas-patch bundle apply "$BASE_API" bundle.yaml \
         --env "$env" \
         -o "$output_file"; then
         echo "✅ Generated: $output_file"
@@ -333,10 +333,10 @@ echo "🎉 All environments validated successfully!"
 oas-patch validate overlay.yaml
 
 # Level 2: Bundle validation
-oas-patch bundle-validate my-bundle
+oas-patch bundle validate bundle.yaml
 
 # Level 3: Generated API validation
-oas-patch apply api.yaml my-bundle -o temp-api.yaml
+oas-patch bundle apply api.yaml bundle.yaml -o temp-api.yaml
 swagger-parser validate temp-api.yaml
 rm temp-api.yaml
 
@@ -368,13 +368,13 @@ if [ -n "$modified_overlays" ]; then
 fi
 
 # Validate modified bundles
-modified_bundles=$(git diff --cached --name-only --diff-filter=ACM | grep bundle.yaml | sed 's|/bundle.yaml||' | sed 's|.*/||')
+modified_bundles=$(git diff --cached --name-only --diff-filter=ACM | grep bundle.yaml)
 
 if [ -n "$modified_bundles" ]; then
-    for bundle in $modified_bundles; do
-        echo "Validating bundle: $bundle..."
-        if ! oas-patch bundle-validate "$bundle"; then
-            echo "❌ Bundle validation failed for $bundle"
+    for bundle_file in $modified_bundles; do
+        echo "Validating bundle: $bundle_file..."
+        if ! oas-patch bundle validate "$bundle_file"; then
+            echo "❌ Bundle validation failed for $bundle_file"
             exit 1
         fi
     done
@@ -420,16 +420,16 @@ jobs:
         find overlays -name "bundle.yaml" | while read file; do
           bundle_name=$(dirname "$file" | basename)
           echo "Validating bundle: $bundle_name"
-          oas-patch bundle-validate "$bundle_name"
+          oas-patch bundle validate "$file"
         done
         
     - name: Generate and validate APIs
       run: |
         # Assuming test-api.yaml exists
-        for bundle in $(oas-patch list-bundles | tail -n +2); do
+        for bundle in $(find . -name "bundle.yaml"); do
           for env in development staging production; do
             echo "Testing $bundle with $env"
-            oas-patch apply test-api.yaml "$bundle" \
+            oas-patch bundle apply test-api.yaml "$bundle" \
               --env "$env" \
               --dry-run
           done

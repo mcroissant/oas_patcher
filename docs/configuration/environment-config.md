@@ -435,18 +435,19 @@ oas-patcher validate prod-openapi.yaml
    ```
    - Check environment name in bundle configuration
    - Ensure environment is properly defined
-   - Use `--list-environments` to see available environments
+   - Use `oas-patch bundle validate bundle.yaml` to check bundle configuration
 
 ### Debugging Tips
 
 ```bash
-# List available environments
-oas-patcher bundle environments --bundle bundle.yml
+# Validate bundle configuration (shows environment info)
+oas-patch bundle validate bundle.yaml
 
-# Show resolved variables
-oas-patcher bundle variables \
-  --bundle bundle.yml \
-  --environment development
+# Test bundle application with verbose output
+oas-patch bundle apply api.yaml bundle-name \
+  --env development \
+  --verbose \
+  --dry-run
 
 # Dry run to see template resolution
 oas-patcher apply \

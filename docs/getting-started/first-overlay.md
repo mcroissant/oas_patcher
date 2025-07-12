@@ -1,18 +1,17 @@
 # Your First Overlay
 
-This tutorial will guide you through creating your first overlay from scratch. You'll learn the overlay format, target selection, and best practices.
+This tutorial will guide you through creating your first overlay step by step. We'll start simple and gradually build up complexity using multiple small overlays.
 
-## What You'll Build
+## What You'll Learn
 
-We'll create an overlay that transforms a basic API specification to add:
-- Production server configuration
-- API versioning
-- Security requirements
-- Enhanced documentation
+- Basic overlay structure and syntax
+- How to target specific parts of an OpenAPI spec
+- Using multiple overlays together
+- When you might need bundle management (coming next!)
 
-## Step 1: Understanding the Source API
+## Step 1: Your Starting API
 
-Let's start with this OpenAPI specification (`bookstore-api.yaml`):
+Let's start with a simple bookstore API (`bookstore.yaml`):
 
 ```yaml
 openapi: 3.0.3
@@ -22,591 +21,162 @@ info:
 paths:
   /books:
     get:
-      summary: Get all books
+      summary: List books
       responses:
         '200':
-          description: List of books
-  /books/{id}:
+          description: Success
+```
+
+This API works, but it's missing some important details. Let's improve it step by step using overlays.
+
+## Step 2: Your First Simple Overlay
+
+Let's create our first overlay to add a server URL. Create `01-add-servers.yaml`:
+
+```yaml
+overlay: 1.0.0
+info:
+  title: Add Server
+  version: 1.0.0
+actions:
+  - target: "$"
+    update:
+        servers:
+          - url: "https://api.bookstore.com"
+            description: "Production server"
+```
+
+### Breaking It Down
+
+- **overlay: 1.0.0** - The overlay format version
+- **info** - Metadata about this overlay
+- **actions** - The changes to make
+- **target: "$"** - Where to make the change (JSONPath), one specificity here is that the path you want to update needs to exist so $.servers wouldn't work
+- **update** - What to put there
+
+### Apply the Overlay
+
+```bash
+oas-patch overlay bookstore.yaml 01-add-servers.yaml --output bookstore-with-server.yaml
+```
+
+Now your API has a server! Check the result:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Bookstore API
+  version: 1.0.0
+paths:
+  /books:
     get:
-      summary: Get book by ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: List books
       responses:
         '200':
-          description: Book details
-        '404':
-          description: Book not found
+          description: Success
+servers:
+- url: https://api.bookstore.com
+  description: Production server
 ```
 
-**Issues with this API:**
-- No server configuration
-- Missing detailed documentation
-- No security
-- Basic error responses
+## Step 3: Add Better Documentation
 
-## Step 2: Plan Your Overlay
-
-Before writing the overlay, let's plan what we want to change:
-
-1. **Add servers** for different environments
-2. **Enhance info section** with description, contact, license
-3. **Add security scheme** (API key authentication)
-4. **Improve error responses** with proper schemas
-5. **Add examples** to responses
-
-## Step 3: Create the Overlay Structure
-
-Create `bookstore-enhancement-overlay.yaml`:
+Create a second overlay `02-improve-info.yaml`:
 
 ```yaml
 overlay: 1.0.0
 info:
-  title: Bookstore API Enhancement Overlay
+  title: Improve Documentation
   version: 1.0.0
-  description: Enhances the bookstore API with production-ready features
 actions:
-  # We'll add actions here step by step
-```
-
-## Step 4: Add Server Configuration
-
-Let's add production and staging servers:
-
-```yaml
-overlay: 1.0.0
-info:
-  title: Bookstore API Enhancement Overlay
-  version: 1.0.0
-  description: Enhances the bookstore API with production-ready features
-actions:
-  # Add servers (since original has none, we just add them)
-  - target: "$"
-    update:
-      servers:
-        - url: https://api.bookstore.com/v1
-          description: Production server
-        - url: https://staging-api.bookstore.com/v1
-          description: Staging server
-        - url: http://localhost:3000/v1
-          description: Development server
-```
-
-### Understanding This Action
-
-- **target: "$"** - Targets the root of the OpenAPI document
-- **update:** - Adds or updates the specified content
-- **servers:** - Adds a servers array to the root
-
-## Step 5: Enhance API Information
-
-Now let's improve the info section:
-
-```yaml
-overlay: 1.0.0
-info:
-  title: Bookstore API Enhancement Overlay
-  version: 1.0.0
-  description: Enhances the bookstore API with production-ready features
-actions:
-  # Add servers
-  - target: "$"
-    update:
-      servers:
-        - url: https://api.bookstore.com/v1
-          description: Production server
-        - url: https://staging-api.bookstore.com/v1
-          description: Staging server
-        - url: http://localhost:3000/v1
-          description: Development server
-
-  # Enhance API information
+  - target: "$.info"
+    update: 
+      description: "A simple API for managing books in our bookstore"
   - target: "$.info"
     update:
-      description: "A comprehensive API for managing bookstore operations including inventory, orders, and customer management."
-      version: "2.0.0"
-      termsOfService: "https://bookstore.com/terms"
       contact:
-        name: "Bookstore API Support"
-        url: "https://bookstore.com/support"
-        email: "api-support@bookstore.com"
-      license:
-        name: "MIT"
-        url: "https://opensource.org/licenses/MIT"
+        name: "API Support"
+        email: "support@bookstore.com"
 ```
 
-### Understanding This Action
+Apply this to your previous result:
 
-- **target: "$.info"** - Targets the info object specifically
-- **update:** - Merges new properties with existing ones
-- The original title stays, but other properties are added or updated
+```bash
+oas-patch overlay bookstore-with-server.yaml 02-improve-info.yaml --output api-documented.yaml
+```
 
-## Step 6: Add Security Configuration
+## Step 4: Add Security
 
-Add API key authentication:
+Create `03-add-security.yaml` to add API key authentication:
 
 ```yaml
-  # Add security components
+overlay: 1.0.0
+info:
+  title: Add API Key Security
+  version: 1.0.0
+actions:
+  # Add security scheme definition
   - target: "$"
     update:
       components:
         securitySchemes:
-          ApiKeyAuth:
-            type: apiKey
-            in: header
-            name: X-API-Key
-            description: "API key for accessing bookstore resources"
-        schemas:
-          Error:
-            type: object
-            required:
-              - code
-              - message
-            properties:
-              code:
-                type: integer
-                format: int32
-                description: Error code
-              message:
-                type: string
-                description: Error message
-              details:
-                type: string
-                description: Additional error details
-```
+            ApiKeyAuth:
+              type: "apiKey"
+              in: "header"
+              name: "X-API-Key"
 
-## Step 7: Apply Security to Endpoints
-
-Now apply security requirements to our endpoints:
-
-```yaml
-  # Add security to GET /books
-  - target: "$.paths./books.get"
+  # Apply security to the books endpoint
+  - target: "$.paths.['/books'].get"
     update:
       security:
         - ApiKeyAuth: []
-      description: "Retrieve a paginated list of all books in the bookstore inventory"
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination
-          schema:
-            type: integer
-            default: 1
-            minimum: 1
-        - name: limit
-          in: query
-          description: Number of books per page
-          schema:
-            type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
-
-  # Add security to GET /books/{id}
-  - target: "$.paths./books/{id}.get"
-    update:
-      security:
-        - ApiKeyAuth: []
-      description: "Retrieve detailed information about a specific book by its unique identifier"
 ```
 
-## Step 8: Enhance Response Schemas
-
-Let's improve the responses with proper schemas:
-
-```yaml
-  # Enhance the GET /books response
-  - target: "$.paths./books.get.responses.200"
-    update:
-      description: "Successfully retrieved list of books"
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              books:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Book"
-              pagination:
-                type: object
-                properties:
-                  page:
-                    type: integer
-                  limit:
-                    type: integer
-                  total:
-                    type: integer
-                  totalPages:
-                    type: integer
-          example:
-            books:
-              - id: "1"
-                title: "The Great Gatsby"
-                author: "F. Scott Fitzgerald"
-                isbn: "978-0-7432-7356-5"
-                price: 12.99
-                stock: 15
-              - id: "2"
-                title: "To Kill a Mockingbird"
-                author: "Harper Lee"
-                isbn: "978-0-06-112008-4"
-                price: 14.99
-                stock: 8
-            pagination:
-              page: 1
-              limit: 20
-              total: 156
-              totalPages: 8
-
-  # Add Book schema to components
-  - target: "$.components.schemas"
-    update:
-      Book:
-        type: object
-        required:
-          - id
-          - title
-          - author
-          - price
-        properties:
-          id:
-            type: string
-            description: Unique identifier for the book
-          title:
-            type: string
-            description: Title of the book
-          author:
-            type: string
-            description: Author of the book
-          isbn:
-            type: string
-            description: ISBN number
-          price:
-            type: number
-            format: float
-            description: Price in USD
-          stock:
-            type: integer
-            description: Number of copies in stock
-          genre:
-            type: string
-            description: Book genre
-          publishedDate:
-            type: string
-            format: date
-            description: Publication date
-```
-
-## Step 9: Add Error Responses
-
-Improve error handling:
-
-```yaml
-  # Add error responses to GET /books
-  - target: "$.paths./books.get.responses"
-    update:
-      '400':
-        description: "Bad request - invalid parameters"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-            example:
-              code: 400
-              message: "Invalid pagination parameters"
-              details: "Page must be greater than 0"
-      '401':
-        description: "Unauthorized - invalid or missing API key"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-            example:
-              code: 401
-              message: "Invalid API key"
-      '500':
-        description: "Internal server error"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-
-  # Add error responses to GET /books/{id}
-  - target: "$.paths./books/{id}.get.responses"
-    update:
-      '400':
-        description: "Bad request - invalid book ID format"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      '401':
-        description: "Unauthorized - invalid or missing API key"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      '500':
-        description: "Internal server error"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-```
-
-## Step 10: Complete Overlay File
-
-Here's the complete overlay file:
-
-```yaml
-overlay: 1.0.0
-info:
-  title: Bookstore API Enhancement Overlay
-  version: 1.0.0
-  description: Enhances the bookstore API with production-ready features
-actions:
-  # Add servers configuration
-  - target: "$"
-    update:
-      servers:
-        - url: https://api.bookstore.com/v1
-          description: Production server
-        - url: https://staging-api.bookstore.com/v1
-          description: Staging server
-        - url: http://localhost:3000/v1
-          description: Development server
-
-  # Enhance API information
-  - target: "$.info"
-    update:
-      description: "A comprehensive API for managing bookstore operations including inventory, orders, and customer management."
-      version: "2.0.0"
-      termsOfService: "https://bookstore.com/terms"
-      contact:
-        name: "Bookstore API Support"
-        url: "https://bookstore.com/support"
-        email: "api-support@bookstore.com"
-      license:
-        name: "MIT"
-        url: "https://opensource.org/licenses/MIT"
-
-  # Add security components and schemas
-  - target: "$"
-    update:
-      components:
-        securitySchemes:
-          ApiKeyAuth:
-            type: apiKey
-            in: header
-            name: X-API-Key
-            description: "API key for accessing bookstore resources"
-        schemas:
-          Book:
-            type: object
-            required:
-              - id
-              - title
-              - author
-              - price
-            properties:
-              id:
-                type: string
-                description: Unique identifier for the book
-              title:
-                type: string
-                description: Title of the book
-              author:
-                type: string
-                description: Author of the book
-              isbn:
-                type: string
-                description: ISBN number
-              price:
-                type: number
-                format: float
-                description: Price in USD
-              stock:
-                type: integer
-                description: Number of copies in stock
-              genre:
-                type: string
-                description: Book genre
-              publishedDate:
-                type: string
-                format: date
-                description: Publication date
-          Error:
-            type: object
-            required:
-              - code
-              - message
-            properties:
-              code:
-                type: integer
-                format: int32
-                description: Error code
-              message:
-                type: string
-                description: Error message
-              details:
-                type: string
-                description: Additional error details
-
-  # Enhance GET /books endpoint
-  - target: "$.paths./books.get"
-    update:
-      security:
-        - ApiKeyAuth: []
-      description: "Retrieve a paginated list of all books in the bookstore inventory"
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination
-          schema:
-            type: integer
-            default: 1
-            minimum: 1
-        - name: limit
-          in: query
-          description: Number of books per page
-          schema:
-            type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
-      responses:
-        '200':
-          description: "Successfully retrieved list of books"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  books:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Book"
-                  pagination:
-                    type: object
-                    properties:
-                      page:
-                        type: integer
-                      limit:
-                        type: integer
-                      total:
-                        type: integer
-                      totalPages:
-                        type: integer
-              example:
-                books:
-                  - id: "1"
-                    title: "The Great Gatsby"
-                    author: "F. Scott Fitzgerald"
-                    isbn: "978-0-7432-7356-5"
-                    price: 12.99
-                    stock: 15
-                pagination:
-                  page: 1
-                  limit: 20
-                  total: 156
-                  totalPages: 8
-        '400':
-          description: "Bad request - invalid parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        '401':
-          description: "Unauthorized - invalid or missing API key"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        '500':
-          description: "Internal server error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  # Enhance GET /books/{id} endpoint
-  - target: "$.paths./books/{id}.get"
-    update:
-      security:
-        - ApiKeyAuth: []
-      description: "Retrieve detailed information about a specific book by its unique identifier"
-      responses:
-        '200':
-          description: "Successfully retrieved book details"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Book"
-              example:
-                id: "1"
-                title: "The Great Gatsby"
-                author: "F. Scott Fitzgerald"
-                isbn: "978-0-7432-7356-5"
-                price: 12.99
-                stock: 15
-                genre: "Classic Literature"
-                publishedDate: "1925-04-10"
-        '400':
-          description: "Bad request - invalid book ID format"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        '401':
-          description: "Unauthorized - invalid or missing API key"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        '404':
-          description: "Book not found"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: "Book not found"
-                details: "No book exists with the provided ID"
-        '500':
-          description: "Internal server error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-
-## Step 11: Apply and Test
-
-Apply your overlay:
+Apply it:
 
 ```bash
-oas-patch overlay bookstore-api.yaml bookstore-enhancement-overlay.yaml -o enhanced-bookstore-api.yaml
+oas-patch overlay api-documented.yaml 03-add-security.yaml --output api-complete.yaml
 ```
 
-Validate the result:
+## Step 5: The Problem with Multiple Commands
 
-```bash
-oas-patch validate enhanced-bookstore-api.yaml --format yaml
-```
+You might have noticed we're running multiple commands and managing intermediate files:
 
-## What You've Learned
+1. `api.yaml` → `api-with-server.yaml` (add server)
+2. `api-with-server.yaml` → `api-documented.yaml` (improve docs)  
+3. `api-documented.yaml` → `api-complete.yaml` (add endpoint)
 
-🎯 **Overlay Structure**: How to organize actions in an overlay  
-🔍 **Target Selection**: Using JSONPath to target specific parts of the API  
-🛡️ **Security Enhancement**: Adding authentication and proper error handling  
-📚 **Documentation**: Improving API documentation with descriptions and examples  
-🏗️ **Schema Design**: Creating reusable components and schemas  
+This gets messy quickly! What if you want to:
+- Apply overlays in a different order?
+- Skip certain overlays for different environments?
+- Share your configuration with teammates?
+
+## What's Next?
+
+You've learned the basics of overlays! But as your API grows, you'll want:
+
+- **Different configurations for different environments** (dev, staging, prod)
+- **Easy way to manage multiple overlays** as a group
+- **Variable substitution** for environment-specific values
+- **Reusable configurations** you can share with your team
+
+This is where **bundles** come in! In the next section, we'll learn how bundles solve these problems and make overlay management much easier.
+
+## Summary
+
+In this tutorial, you learned:
+
+✅ **Basic overlay structure** - Every overlay needs `overlay`, `info`, and `actions`  
+✅ **JSONPath targeting** - Use `$.path.to.property` to target specific locations  
+✅ **Update operations** - Replace or add content with `update`  
+✅ **Multiple overlays** - Apply several overlays to build up changes gradually  
+
+
+### Next Steps
+
+Ready to learn about bundles? Continue to **[Bundle Management](../core-concepts/bundles.md)** to see how to organize and manage your overlays more effectively!
+
+
 
 ## Key Takeaways
 
@@ -615,15 +185,11 @@ oas-patch validate enhanced-bookstore-api.yaml --format yaml
 1. **Incremental Changes**: Built the overlay step by step
 2. **Proper Targeting**: Used specific JSONPath expressions
 3. **Reusable Components**: Created schemas that can be referenced
-4. **Complete Documentation**: Added descriptions and examples
-5. **Error Handling**: Included comprehensive error responses
 
 ### Common Patterns
 
 - **Root Updates**: Use `"$"` to add new top-level sections
 - **Object Updates**: Use `"$.path.to.object"` to modify specific objects
-- **Component References**: Use `$ref` to reference reusable schemas
-- **Security Application**: Apply security at the operation level
 
 ## Next Steps
 
@@ -633,19 +199,3 @@ Now that you've created your first overlay:
 2. **Learn Bundles**: Organize multiple overlays with [Bundle Management](../core-concepts/bundles.md)
 3. **Add Templates**: Use dynamic content with [Template Engine](../core-concepts/templates.md)
 4. **Explore Examples**: Check out [real-world examples](../examples/simple-modifications.md)
-
-## Troubleshooting
-
-**Overlay not applying?**
-- Check JSONPath syntax with `oas-patch validate`
-- Verify target paths exist in the source document
-- Use `--format yaml` for detailed validation output
-
-**Unexpected results?**
-- Remember that updates merge with existing content
-- Use `remove: true` before adding new content if needed
-- Check the order of actions in your overlay
-
----
-
-**Congratulations!** You've successfully created a comprehensive overlay. Continue with [Bundle Management](../core-concepts/bundles.md) to learn how to organize multiple overlays.

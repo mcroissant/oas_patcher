@@ -21,7 +21,6 @@ OAS Patcher enables you to modify, enhance, and manage OpenAPI specifications us
 ### Problems It Solves
 
 - **API Evolution**: Modify APIs across different environments without duplicating specification files
-- **Team Collaboration**: Multiple teams can contribute overlays without merge conflicts
 - **CI/CD Integration**: Automatically apply environment-specific configurations during deployment
 - **Documentation Maintenance**: Keep API documentation in sync across multiple versions
 - **Configuration Management**: Centralize API configuration with environment-specific overrides
@@ -29,9 +28,9 @@ OAS Patcher enables you to modify, enhance, and manage OpenAPI specifications us
 ### Real-World Use Cases
 
 - **Multi-Environment Deployments**: Different server URLs, authentication schemes per environment
+- **Security Updates**: Update authentication methods or add new security schemes to keep wour documentation in sync with the changes your api gateway introduces
 - **API Versioning**: Add new endpoints or modify existing ones for new API versions
 - **Documentation Enhancement**: Add examples, descriptions, or additional metadata
-- **Security Updates**: Update authentication methods or add new security schemes
 - **Compliance Requirements**: Add regulatory information or compliance metadata
 
 ## Quick Example
@@ -60,8 +59,6 @@ info:
   title: Production Environment Overlay
   version: 1.0.0
 actions:
-  - target: "$.servers"
-    remove: true
   - target: "$"
     update:
       servers:
@@ -87,25 +84,6 @@ Ready to get started? Follow these steps:
 2. [**Quick Start Guide**](getting-started/quick-start.md) - Your first overlay in 5 minutes
 3. [**Create Your First Overlay**](getting-started/first-overlay.md) - Step-by-step tutorial
 
-## Architecture Overview
-
-OAS Patcher is built with modularity and extensibility in mind:
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CLI Interface │    │  Bundle Manager │    │ Template Engine │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │ Overlay Engine  │
-                    └─────────────────┘
-                             │
-                    ┌─────────────────┐
-                    │   Validator     │
-                    └─────────────────┘
-```
 
 ## Community and Support
 
