@@ -44,15 +44,23 @@ def format_errors(errors, output_format):
             }
             for error in errors
         ]
-        return yaml.dump({"status": status, "errors": formatted_errors}, sort_keys=False)
-    elif output_format == 'log':  # Default to log-friendly format
-        output = ["[ERROR] Validation failed with the following issues"] if errors else ["[INFO] Validation successful"]
+        return yaml.dump(
+            {"status": status, "errors": formatted_errors}, sort_keys=False
+        )
+    elif output_format == "log":  # Default to log-friendly format
+        output = (
+            ["[ERROR] Validation failed with the following issues"]
+            if errors
+            else ["[INFO] Validation successful"]
+        )
         for error in errors:
             error_details = f"{error.message}"
             if error.path:
                 error_details += f"\n\t Path: {' -> '.join(map(str, error.path))}"
             if error.schema_path:
-                error_details += f"\n\t Schema Path: {' -> '.join(map(str, error.schema_path))}"
+                error_details += (
+                    f"\n\t Schema Path: {' -> '.join(map(str, error.schema_path))}"
+                )
             output.append(f"[ERROR] {error_details}")
         return "\n".join(output)
     else:

@@ -1,10 +1,8 @@
 """Unit tests for the BundleManager class."""
 
-import os
 import tempfile
-import yaml
 from pathlib import Path
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch
 import pytest
 
 from oas_patch.bundle_manager import BundleManager, BundleConfig, OverlayConfig
@@ -21,6 +19,7 @@ class TestBundleManager:
     def teardown_method(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_init_default_config_dir(self):
@@ -72,7 +71,7 @@ class TestBundleManager:
         bundles = self.bundle_manager.discover_bundles()
         assert bundles == ["testbundle"]
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_load_bundle_success(self, mock_load_file):
         """Test successful bundle loading."""
         # Create bundle config file
@@ -83,17 +82,17 @@ class TestBundleManager:
 
         # Mock file content
         mock_config = {
-            'name': 'Test Bundle',
-            'description': 'A test bundle',
-            'version': '1.0.0',
-            'overlays': [
+            "name": "Test Bundle",
+            "description": "A test bundle",
+            "version": "1.0.0",
+            "overlays": [
                 {
-                    'path': 'overlay1.yaml',
-                    'description': 'First overlay',
-                    'environment': ['dev', 'test']
+                    "path": "overlay1.yaml",
+                    "description": "First overlay",
+                    "environment": ["dev", "test"],
                 }
             ],
-            'variables': {'env': 'test'}
+            "variables": {"env": "test"},
         }
         mock_load_file.return_value = mock_config
 
@@ -105,15 +104,15 @@ class TestBundleManager:
         assert bundle.version == "1.0.0"
         assert len(bundle.overlays) == 1
         assert bundle.overlays[0].path == "overlay1.yaml"
-        assert bundle.overlays[0].environment == ['dev', 'test']
-        assert bundle.variables == {'env': 'test'}
+        assert bundle.overlays[0].environment == ["dev", "test"]
+        assert bundle.variables == {"env": "test"}
 
     def test_load_bundle_not_found(self):
         """Test loading non-existent bundle."""
         with pytest.raises(FileNotFoundError, match="Bundle 'nonexistent' not found"):
             self.bundle_manager.load_bundle("nonexistent")
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_load_bundle_invalid_config(self, mock_load_file):
         """Test loading bundle with invalid configuration."""
         # Create bundle config file
@@ -127,7 +126,7 @@ class TestBundleManager:
         with pytest.raises(ValueError, match="Failed to load bundle 'testbundle'"):
             self.bundle_manager.load_bundle("testbundle")
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_load_bundle_caching(self, mock_load_file):
         """Test that loaded bundles are cached."""
         # Create bundle config file
@@ -137,9 +136,9 @@ class TestBundleManager:
         config_file.touch()
 
         mock_config = {
-            'name': 'Test Bundle',
-            'description': 'A test bundle',
-            'overlays': []
+            "name": "Test Bundle",
+            "description": "A test bundle",
+            "overlays": [],
         }
         mock_load_file.return_value = mock_config
 
@@ -187,11 +186,7 @@ class TestBundleManager:
 
     def test_parse_bundle_config_minimal(self):
         """Test parsing minimal bundle configuration."""
-        config_data = {
-            'overlays': [
-                {'path': 'overlay1.yaml'}
-            ]
-        }
+        config_data = {"overlays": [{"path": "overlay1.yaml"}]}
 
         bundle = self.bundle_manager._parse_bundle_config(config_data, "testbundle")
 
@@ -207,18 +202,18 @@ class TestBundleManager:
     def test_parse_bundle_config_complete(self):
         """Test parsing complete bundle configuration."""
         config_data = {
-            'name': 'Complete Bundle',
-            'description': 'A complete test bundle',
-            'version': '2.0.0',
-            'overlays': [
+            "name": "Complete Bundle",
+            "description": "A complete test bundle",
+            "version": "2.0.0",
+            "overlays": [
                 {
-                    'path': 'overlay1.yaml',
-                    'environment': ['prod'],
-                    'description': 'Production overlay',
-                    'variables': {'key': 'value'}
+                    "path": "overlay1.yaml",
+                    "environment": ["prod"],
+                    "description": "Production overlay",
+                    "variables": {"key": "value"},
                 }
             ],
-            'variables': {'global_var': 'global_value'}
+            "variables": {"global_var": "global_value"},
         }
 
         bundle = self.bundle_manager._parse_bundle_config(config_data, "testbundle")
@@ -228,12 +223,12 @@ class TestBundleManager:
         assert bundle.version == "2.0.0"
         assert len(bundle.overlays) == 1
         assert bundle.overlays[0].path == "overlay1.yaml"
-        assert bundle.overlays[0].environment == ['prod']
+        assert bundle.overlays[0].environment == ["prod"]
         assert bundle.overlays[0].description == "Production overlay"
-        assert bundle.overlays[0].variables == {'key': 'value'}
-        assert bundle.variables == {'global_var': 'global_value'}
+        assert bundle.overlays[0].variables == {"key": "value"}
+        assert bundle.variables == {"global_var": "global_value"}
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_validate_bundle_success(self, mock_load_file):
         """Test successful bundle validation."""
         # Create bundle config file
@@ -247,27 +242,25 @@ class TestBundleManager:
         overlay_file.touch()
 
         # Mock file loading
-        mock_config = {
-            'overlays': [{'path': 'overlay1.yaml'}]
-        }
-        mock_overlay = {'info': {'title': 'Test'}}
-        
+        mock_config = {"overlays": [{"path": "overlay1.yaml"}]}
+        mock_overlay = {"info": {"title": "Test"}}
+
         def load_file_side_effect(path):
-            if 'bundle.yaml' in path:
+            if "bundle.yaml" in path:
                 return mock_config
-            elif 'overlay1.yaml' in path:
+            elif "overlay1.yaml" in path:
                 return mock_overlay
             return {}
-        
+
         mock_load_file.side_effect = load_file_side_effect
 
         result = self.bundle_manager.validate_bundle("testbundle")
 
-        assert result['valid'] is True
-        assert result['errors'] == []
-        assert result['warnings'] == []
+        assert result["valid"] is True
+        assert result["errors"] == []
+        assert result["warnings"] == []
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_validate_bundle_no_overlays(self, mock_load_file):
         """Test bundle validation with no overlays."""
         # Create bundle config file
@@ -276,16 +269,16 @@ class TestBundleManager:
         config_file = bundle_dir / "bundle.yaml"
         config_file.touch()
 
-        mock_config = {'overlays': []}
+        mock_config = {"overlays": []}
         mock_load_file.return_value = mock_config
 
         result = self.bundle_manager.validate_bundle("testbundle")
 
-        assert result['valid'] is True
-        assert result['errors'] == []
-        assert "Bundle contains no overlays" in result['warnings']
+        assert result["valid"] is True
+        assert result["errors"] == []
+        assert "Bundle contains no overlays" in result["warnings"]
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_validate_bundle_missing_overlay_file(self, mock_load_file):
         """Test bundle validation with missing overlay file."""
         # Create bundle config file
@@ -294,17 +287,15 @@ class TestBundleManager:
         config_file = bundle_dir / "bundle.yaml"
         config_file.touch()
 
-        mock_config = {
-            'overlays': [{'path': 'missing_overlay.yaml'}]
-        }
+        mock_config = {"overlays": [{"path": "missing_overlay.yaml"}]}
         mock_load_file.return_value = mock_config
 
         result = self.bundle_manager.validate_bundle("testbundle")
 
-        assert result['valid'] is False
-        assert "Overlay file not found: missing_overlay.yaml" in result['errors']
+        assert result["valid"] is False
+        assert "Overlay file not found: missing_overlay.yaml" in result["errors"]
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_validate_bundle_invalid_overlay_format(self, mock_load_file):
         """Test bundle validation with invalid overlay file format."""
         # Create bundle config file and overlay file
@@ -315,35 +306,35 @@ class TestBundleManager:
         overlay_file = bundle_dir / "overlay1.yaml"
         overlay_file.touch()
 
-        mock_config = {
-            'overlays': [{'path': 'overlay1.yaml'}]
-        }
-        
+        mock_config = {"overlays": [{"path": "overlay1.yaml"}]}
+
         def load_file_side_effect(path):
-            if 'bundle.yaml' in path:
+            if "bundle.yaml" in path:
                 return mock_config
-            elif 'overlay1.yaml' in path:
+            elif "overlay1.yaml" in path:
                 raise ValueError("Invalid YAML format")
             return {}
-        
+
         mock_load_file.side_effect = load_file_side_effect
 
         result = self.bundle_manager.validate_bundle("testbundle")
 
-        assert result['valid'] is False
-        assert "Invalid overlay file format 'overlay1.yaml'" in str(result['errors'])
+        assert result["valid"] is False
+        assert "Invalid overlay file format 'overlay1.yaml'" in str(result["errors"])
 
     def test_validate_bundle_bundle_not_found(self):
         """Test bundle validation with non-existent bundle."""
         result = self.bundle_manager.validate_bundle("nonexistent")
 
-        assert result['valid'] is False
-        assert "Bundle validation failed" in str(result['errors'])
+        assert result["valid"] is False
+        assert "Bundle validation failed" in str(result["errors"])
 
     def test_resolve_overlay_path_absolute(self):
         """Test resolving absolute overlay path."""
         absolute_path = "/absolute/path/overlay.yaml"
-        resolved = self.bundle_manager._resolve_overlay_path("testbundle", absolute_path)
+        resolved = self.bundle_manager._resolve_overlay_path(
+            "testbundle", absolute_path
+        )
         assert resolved == Path(absolute_path)
 
     def test_resolve_overlay_path_relative_to_bundle(self):
@@ -354,7 +345,9 @@ class TestBundleManager:
         overlay_file = bundle_dir / "overlay.yaml"
         overlay_file.touch()
 
-        resolved = self.bundle_manager._resolve_overlay_path("testbundle", "overlay.yaml")
+        resolved = self.bundle_manager._resolve_overlay_path(
+            "testbundle", "overlay.yaml"
+        )
         assert resolved == overlay_file
 
     def test_resolve_overlay_path_relative_to_config(self):
@@ -363,10 +356,12 @@ class TestBundleManager:
         overlay_file = Path(self.temp_dir) / "overlay.yaml"
         overlay_file.touch()
 
-        resolved = self.bundle_manager._resolve_overlay_path("testbundle", "overlay.yaml")
+        resolved = self.bundle_manager._resolve_overlay_path(
+            "testbundle", "overlay.yaml"
+        )
         assert resolved == overlay_file
 
-    @patch('oas_patch.bundle_manager.load_file')
+    @patch("oas_patch.bundle_manager.load_file")
     def test_get_overlays_for_environment(self, mock_load_file):
         """Test filtering overlays by environment."""
         # Create bundle config file
@@ -376,28 +371,32 @@ class TestBundleManager:
         config_file.touch()
 
         mock_config = {
-            'overlays': [
-                {'path': 'overlay1.yaml', 'environment': ['dev', 'test']},
-                {'path': 'overlay2.yaml', 'environment': ['prod']},
-                {'path': 'overlay3.yaml'}  # No environment restriction
+            "overlays": [
+                {"path": "overlay1.yaml", "environment": ["dev", "test"]},
+                {"path": "overlay2.yaml", "environment": ["prod"]},
+                {"path": "overlay3.yaml"},  # No environment restriction
             ]
         }
         mock_load_file.return_value = mock_config
 
         # Test dev environment
-        dev_overlays = self.bundle_manager.get_overlays_for_environment("testbundle", "dev")
+        dev_overlays = self.bundle_manager.get_overlays_for_environment(
+            "testbundle", "dev"
+        )
         assert len(dev_overlays) == 2
         assert dev_overlays[0].path == "overlay1.yaml"
         assert dev_overlays[1].path == "overlay3.yaml"
 
         # Test prod environment
-        prod_overlays = self.bundle_manager.get_overlays_for_environment("testbundle", "prod")
+        prod_overlays = self.bundle_manager.get_overlays_for_environment(
+            "testbundle", "prod"
+        )
         assert len(prod_overlays) == 2
         assert prod_overlays[0].path == "overlay2.yaml"
         assert prod_overlays[1].path == "overlay3.yaml"
 
-    @patch('oas_patch.bundle_manager.load_file')
-    @patch.object(BundleManager, 'validate_bundle')
+    @patch("oas_patch.bundle_manager.load_file")
+    @patch.object(BundleManager, "validate_bundle")
     def test_get_bundle_info(self, mock_validate, mock_load_file):
         """Test getting bundle information."""
         # Create bundle config file
@@ -407,40 +406,36 @@ class TestBundleManager:
         config_file.touch()
 
         mock_config = {
-            'name': 'Test Bundle',
-            'description': 'A test bundle',
-            'version': '1.0.0',
-            'overlays': [
+            "name": "Test Bundle",
+            "description": "A test bundle",
+            "version": "1.0.0",
+            "overlays": [
                 {
-                    'path': 'overlay1.yaml',
-                    'environment': ['dev'],
-                    'description': 'Dev overlay',
-                    'variables': {'key': 'value'}
+                    "path": "overlay1.yaml",
+                    "environment": ["dev"],
+                    "description": "Dev overlay",
+                    "variables": {"key": "value"},
                 }
             ],
-            'variables': {'global_var': 'global_value'}
+            "variables": {"global_var": "global_value"},
         }
         mock_load_file.return_value = mock_config
 
-        mock_validation = {
-            'valid': True,
-            'errors': [],
-            'warnings': []
-        }
+        mock_validation = {"valid": True, "errors": [], "warnings": []}
         mock_validate.return_value = mock_validation
 
         info = self.bundle_manager.get_bundle_info("testbundle")
 
-        assert info['name'] == "Test Bundle"
-        assert info['description'] == "A test bundle"
-        assert info['version'] == "1.0.0"
-        assert len(info['overlays']) == 1
-        assert info['overlays'][0]['path'] == "overlay1.yaml"
-        assert info['overlays'][0]['environment'] == ['dev']
-        assert info['overlays'][0]['description'] == "Dev overlay"
-        assert info['overlays'][0]['variables'] == {'key': 'value'}
-        assert info['variables'] == {'global_var': 'global_value'}
-        assert info['validation'] == mock_validation
+        assert info["name"] == "Test Bundle"
+        assert info["description"] == "A test bundle"
+        assert info["version"] == "1.0.0"
+        assert len(info["overlays"]) == 1
+        assert info["overlays"][0]["path"] == "overlay1.yaml"
+        assert info["overlays"][0]["environment"] == ["dev"]
+        assert info["overlays"][0]["description"] == "Dev overlay"
+        assert info["overlays"][0]["variables"] == {"key": "value"}
+        assert info["variables"] == {"global_var": "global_value"}
+        assert info["validation"] == mock_validation
 
 
 class TestBundleConfig:
@@ -454,7 +449,7 @@ class TestBundleConfig:
             description="Test Description",
             overlays=overlays,
             version="2.0.0",
-            variables={"key": "value"}
+            variables={"key": "value"},
         )
 
         assert bundle.name == "Test Bundle"
@@ -467,9 +462,7 @@ class TestBundleConfig:
         """Test BundleConfig with default values."""
         overlays = [OverlayConfig(path="test.yaml")]
         bundle = BundleConfig(
-            name="Test Bundle",
-            description="Test Description",
-            overlays=overlays
+            name="Test Bundle", description="Test Description", overlays=overlays
         )
 
         assert bundle.version == "1.0.0"
@@ -485,7 +478,7 @@ class TestOverlayConfig:
             path="test.yaml",
             environment=["dev", "test"],
             description="Test overlay",
-            variables={"key": "value"}
+            variables={"key": "value"},
         )
 
         assert overlay.path == "test.yaml"
