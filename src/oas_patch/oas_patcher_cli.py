@@ -83,7 +83,7 @@ def cli():
 def bundle():
     """
     Bundle management commands.
-    
+
     Manage overlay bundles and environments for complex OpenAPI document processing.
     """
     pass
@@ -205,7 +205,9 @@ def require_enhanced_features():
 
 @bundle.command()
 @click.argument("openapi_file")
-@click.argument("bundle_file", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument(
+    "bundle_file", type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
 @click.option(
     "--output", "-o", help="Output file path (auto-generated if not specified)"
 )
@@ -218,9 +220,7 @@ def require_enhanced_features():
 @click.option(
     "--verbose", "-v", is_flag=True, help="Verbose output with progress indicators"
 )
-def apply(
-    openapi_file, bundle_file, output, env, format, var, dry_run, verbose
-):
+def apply(openapi_file, bundle_file, output, env, format, var, dry_run, verbose):
     """
     Apply overlay bundle to OpenAPI document.
 
@@ -241,7 +241,6 @@ def apply(
         bundle_dir = bundle_file.parent
 
         # Initialize managers with bundle directory
-        bundle_manager = BundleManager(str(bundle_dir))
         env_manager = EnvironmentManager(str(bundle_dir))
         template_engine = TemplateEngine()
 
@@ -273,7 +272,7 @@ def apply(
 
         # Get overlays from bundle config
         overlays = bundle_config.get("overlays", [])
-        
+
         # Filter overlays by environment if specified
         if env:
             filtered_overlays = []
@@ -282,7 +281,7 @@ def apply(
                 if not overlay_env or env in overlay_env:
                     filtered_overlays.append(overlay)
             overlays = filtered_overlays
-            
+
             if verbose:
                 cli_utils.print_info(f"Using environment: {env}")
                 cli_utils.print_info(f"Found {len(overlays)} overlays for environment")
@@ -296,17 +295,17 @@ def apply(
 
         # Get merged variables
         variables = {}
-        
+
         # Add environment variables if environment manager can find them
         try:
             if env:
                 variables = env_manager.get_variables(env, cli_variables)
             else:
                 variables = cli_variables.copy()
-        except:
+        except Exception:
             # If environment manager fails, just use CLI variables
             variables = cli_variables.copy()
-            
+
         # Add bundle variables
         bundle_vars = bundle_config.get("variables", {})
         for key, value in bundle_vars.items():
@@ -336,19 +335,21 @@ def apply(
 
             for overlay_config in overlays:
                 if verbose:
-                    cli_utils.print_info(f"Processing overlay: {overlay_config.get('path', 'unknown')}")
+                    cli_utils.print_info(
+                        f"Processing overlay: {overlay_config.get('path', 'unknown')}"
+                    )
 
                 # Resolve overlay file path relative to bundle file
                 overlay_path_str = overlay_config.get("path")
                 if not overlay_path_str:
                     cli_utils.print_error("Overlay missing required 'path' field")
                     continue
-                    
+
                 if Path(overlay_path_str).is_absolute():
                     overlay_path = Path(overlay_path_str)
                 else:
                     overlay_path = bundle_file.parent / overlay_path_str
-                
+
                 try:
                     overlay_data = load_file(str(overlay_path))
                 except (FileNotFoundError, ValueError) as e:
@@ -379,9 +380,7 @@ def apply(
                     modified_doc = apply_overlay(modified_doc, processed_overlay)
                     overlays_applied += 1
                     if verbose:
-                        cli_utils.print_success(
-                            f"Applied overlay: {overlay_path_str}"
-                        )
+                        cli_utils.print_success(f"Applied overlay: {overlay_path_str}")
                 except Exception as e:
                     cli_utils.print_error(
                         f"Failed to apply overlay {overlay_path_str}: {e}"
@@ -424,10 +423,12 @@ def apply(
 
 
 @bundle.command("validate")
-@click.argument("bundle_file", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument(
+    "bundle_file", type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
 def bundle_validate(bundle_file):
     """Validate bundle configuration and overlay files.
-    
+
     BUNDLE_FILE: Path to the bundle configuration file (e.g., bundle.yaml)
     """
     require_enhanced_features()
@@ -464,33 +465,41 @@ def bundle_validate(bundle_file):
                 if not isinstance(overlay, dict):
                     validation_errors.append(f"Overlay {i} must be an object")
                     continue
-                
+
                 if "path" not in overlay:
-                    validation_errors.append(f"Overlay {i} missing required 'path' field")
+                    validation_errors.append(
+                        f"Overlay {i} missing required 'path' field"
+                    )
                     continue
-                
+
                 # Check if overlay file exists (resolve relative to bundle file)
                 if Path(overlay["path"]).is_absolute():
                     overlay_path = Path(overlay["path"])
                 else:
                     overlay_path = bundle_file.parent / overlay["path"]
-                
+
                 if not overlay_path.exists():
-                    validation_errors.append(f"Overlay file not found: {overlay['path']}")
+                    validation_errors.append(
+                        f"Overlay file not found: {overlay['path']}"
+                    )
                 else:
                     # Try to load and validate the overlay file
                     try:
                         overlay_data = load_file(str(overlay_path))
                         if "overlay" not in overlay_data:
-                            validation_warnings.append(f"Overlay {overlay['path']} missing 'overlay' version field")
+                            validation_warnings.append(
+                                f"Overlay {overlay['path']} missing 'overlay' version field"
+                            )
                     except Exception as e:
-                        validation_errors.append(f"Failed to load overlay {overlay['path']}: {e}")
+                        validation_errors.append(
+                            f"Failed to load overlay {overlay['path']}: {e}"
+                        )
 
         # Create validation result
         validation_result = {
             "valid": len(validation_errors) == 0,
             "errors": validation_errors,
-            "warnings": validation_warnings
+            "warnings": validation_warnings,
         }
 
         cli_utils.print_validation_results(validation_result, f"Bundle '{bundle_name}'")
@@ -513,12 +522,12 @@ def init(force):
         current_path = Path(".")
         overlays_path = current_path / "overlays"
         bundle_name = "example-bundle"
-        
+
         # Check if files already exist
         bundle_file = current_path / "bundle.yaml"
         overlay1_file = overlays_path / "add-version.yaml"
         overlay2_file = overlays_path / "add-server.yaml"
-        
+
         existing_files = []
         if bundle_file.exists():
             existing_files.append("bundle.yaml")
@@ -526,7 +535,7 @@ def init(force):
             existing_files.append("overlays/add-version.yaml")
         if overlay2_file.exists():
             existing_files.append("overlays/add-server.yaml")
-            
+
         if existing_files and not force:
             if not cli_utils.confirm_action(
                 f"Files {', '.join(existing_files)} already exist. Continue?"
@@ -537,7 +546,7 @@ def init(force):
         # Create overlays directory if it doesn't exist
         overlays_path.mkdir(exist_ok=True)
 
-        cli_utils.print_info(f"Creating example bundle files in current directory")
+        cli_utils.print_info("Creating example bundle files in current directory")
 
         # Create example bundle configuration
         bundle_config = {

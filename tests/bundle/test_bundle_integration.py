@@ -3,7 +3,6 @@
 import tempfile
 import pytest
 import json
-import yaml
 from pathlib import Path
 from click.testing import CliRunner
 
@@ -123,23 +122,25 @@ class TestBundleIntegration:
         openapi_file = bundle_dir / "openapi.yaml"
         bundle_file = bundle_dir / "bundle.yaml"
         output_file = temp_output_dir / f"{test_case['id']}_result.yaml"
-        
+
         # Verify required files exist
         assert openapi_file.exists(), f"OpenAPI file not found: {openapi_file}"
         assert bundle_file.exists(), f"Bundle file not found: {bundle_file}"
 
         # Build CLI command
         cli_args = [
-            "bundle", "apply",
+            "bundle",
+            "apply",
             str(openapi_file),
             str(bundle_file),
-            "--output", str(output_file)
+            "--output",
+            str(output_file),
         ]
-        
+
         # Add environment if specified
         if test_case["environment"]:
             cli_args.extend(["--env", test_case["environment"]])
-            
+
         # Add variables if specified
         if test_case["variables"]:
             for key, value in test_case["variables"].items():
@@ -147,17 +148,17 @@ class TestBundleIntegration:
 
         # Run CLI command
         result = self.run_cli_command(cli_args)
-        
+
         # Verify command succeeded
         if not test_case["should_succeed"]:
             assert result.exit_code != 0
             return
-            
+
         assert result.exit_code == 0, f"CLI command failed: {result.output}"
-        
+
         # Verify output file was created
         assert output_file.exists(), "Output file was not created"
-        
+
         # Load and validate the result
         result_openapi = load_file(str(output_file))
         self._validate_result(result_openapi, test_case)
@@ -259,14 +260,16 @@ class TestBundleIntegration:
         """Test bundle validation functionality using CLI."""
         bundle_dir = samples_dir / test_case["bundle_name"]
         bundle_file = bundle_dir / "bundle.yaml"
-        
+
         # Run bundle validate command
         result = self.run_cli_command(["bundle", "validate", str(bundle_file)])
-        
+
         if test_case["should_be_valid"]:
             assert result.exit_code == 0, f"Bundle validation failed: {result.output}"
         else:
-            assert result.exit_code == 1, f"Bundle validation should have failed: {result.output}"
+            assert (
+                result.exit_code == 1
+            ), f"Bundle validation should have failed: {result.output}"
             if "expected_error_contains" in test_case:
                 assert test_case["expected_error_contains"] in result.output
 
@@ -276,16 +279,20 @@ class TestBundleIntegration:
         openapi_file = bundle_dir / "openapi.yaml"
         bundle_file = bundle_dir / "bundle.yaml"
         output_file = temp_output_dir / "dry_run_test.yaml"
-        
+
         # Run with dry run flag
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(openapi_file),
-            str(bundle_file),
-            "--output", str(output_file),
-            "--dry-run"
-        ])
-        
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(openapi_file),
+                str(bundle_file),
+                "--output",
+                str(output_file),
+                "--dry-run",
+            ]
+        )
+
         # Should succeed but not create output file
         assert result.exit_code == 0
         assert not output_file.exists(), "Dry run should not create output file"
@@ -296,37 +303,47 @@ class TestBundleIntegration:
         bundle_dir = samples_dir / "simple_bundle"
         openapi_file = bundle_dir / "openapi.yaml"
         bundle_file = bundle_dir / "bundle.yaml"
-        
+
         # Test YAML format
         yaml_output = temp_output_dir / "output.yaml"
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(openapi_file),
-            str(bundle_file),
-            "--output", str(yaml_output),
-            "--format", "yaml"
-        ])
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(openapi_file),
+                str(bundle_file),
+                "--output",
+                str(yaml_output),
+                "--format",
+                "yaml",
+            ]
+        )
         assert result.exit_code == 0
         assert yaml_output.exists()
-        
+
         # Verify it's valid YAML
         result_data = load_file(str(yaml_output))
         assert result_data["info"]["title"] == "Simple API"
-        
+
         # Test JSON format
         json_output = temp_output_dir / "output.json"
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(openapi_file),
-            str(bundle_file),
-            "--output", str(json_output),
-            "--format", "json"
-        ])
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(openapi_file),
+                str(bundle_file),
+                "--output",
+                str(json_output),
+                "--format",
+                "json",
+            ]
+        )
         assert result.exit_code == 0
         assert json_output.exists()
-        
+
         # Verify it's valid JSON
-        with open(json_output, 'r') as f:
+        with open(json_output, "r") as f:
             json_data = json.load(f)
         assert json_data["info"]["title"] == "Simple API"
 
@@ -335,31 +352,36 @@ class TestBundleIntegration:
         bundle_dir = samples_dir / "simple_bundle"
         bundle_file = bundle_dir / "bundle.yaml"
         output_file = temp_output_dir / "error_test.yaml"
-        
+
         # Test with non-existent OpenAPI file
-        result = self.run_cli_command([
-            "bundle", "apply",
-            "nonexistent.yaml",
-            str(bundle_file),
-            "--output", str(output_file)
-        ])
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                "nonexistent.yaml",
+                str(bundle_file),
+                "--output",
+                str(output_file),
+            ]
+        )
         assert result.exit_code == 1
-        
+
         # Test with non-existent bundle file
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(bundle_dir / "openapi.yaml"),
-            "nonexistent_bundle.yaml",
-            "--output", str(output_file)
-        ])
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(bundle_dir / "openapi.yaml"),
+                "nonexistent_bundle.yaml",
+                "--output",
+                str(output_file),
+            ]
+        )
         assert result.exit_code == 2  # Click validation error
-        
+
         # Test bundle validation with invalid bundle
         invalid_bundle_file = samples_dir / "invalid_bundle" / "bundle.yaml"
-        result = self.run_cli_command([
-            "bundle", "validate",
-            str(invalid_bundle_file)
-        ])
+        result = self.run_cli_command(["bundle", "validate", str(invalid_bundle_file)])
         assert result.exit_code == 1
 
     def test_verbose_output(self, samples_dir, temp_output_dir):
@@ -368,16 +390,20 @@ class TestBundleIntegration:
         openapi_file = bundle_dir / "openapi.yaml"
         bundle_file = bundle_dir / "bundle.yaml"
         output_file = temp_output_dir / "verbose_test.yaml"
-        
+
         # Run with verbose flag
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(openapi_file),
-            str(bundle_file),
-            "--output", str(output_file),
-            "--verbose"
-        ])
-        
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(openapi_file),
+                str(bundle_file),
+                "--output",
+                str(output_file),
+                "--verbose",
+            ]
+        )
+
         assert result.exit_code == 0
         # Check for verbose output elements (these may vary based on implementation)
         # We just verify it doesn't break anything
@@ -461,12 +487,16 @@ class TestBundleAdvancedScenarios:
 
         # Apply bundle using CLI
         output_file = tmp_path / "complex_result.yaml"
-        result = self.run_cli_command([
-            "bundle", "apply",
-            str(bundle_dir / "openapi.yaml"),
-            str(bundle_dir / "bundle.yaml"),
-            "--output", str(output_file)
-        ])
+        result = self.run_cli_command(
+            [
+                "bundle",
+                "apply",
+                str(bundle_dir / "openapi.yaml"),
+                str(bundle_dir / "bundle.yaml"),
+                "--output",
+                str(output_file),
+            ]
+        )
 
         # Verify command succeeded
         assert result.exit_code == 0, f"CLI command failed: {result.output}"
@@ -484,18 +514,19 @@ class TestBundleAdvancedScenarios:
         """Test bundle init command functionality."""
         # Change to the temp directory
         import os
+
         original_cwd = os.getcwd()
         try:
             os.chdir(tmp_path)
-            
+
             # Run bundle init command
             result = self.run_cli_command(["bundle", "init", "--force"])
-            
+
             # Should succeed
             assert result.exit_code == 0
-            
+
             # Check that bundle.yaml was mentioned in output (though actual file creation may be mocked)
             assert "bundle.yaml" in result.output or result.exit_code == 0
-            
+
         finally:
             os.chdir(original_cwd)
