@@ -278,4 +278,3 @@ overlays:
 
 - Learn about [Template Engine](templates.md) integration with bundles
 - Explore [Environment Variables](environment-variables.md) for dynamic configurations
-- See [CI/CD Integration](../tutorials/cicd-integration.md) for automated bundle deployment

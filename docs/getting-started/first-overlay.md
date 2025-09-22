@@ -4,6 +4,7 @@ This tutorial will guide you through creating your first overlay step by step. W
 
 ## What You'll Learn
 
+
 - Basic overlay structure and syntax
 - How to target specific parts of an OpenAPI spec
 - Using multiple overlays together
@@ -198,4 +199,3 @@ Now that you've created your first overlay:
 1. **Practice**: Try creating overlays for different scenarios
 2. **Learn Bundles**: Organize multiple overlays with [Bundle Management](../core-concepts/bundles.md)
 3. **Add Templates**: Use dynamic content with [Template Engine](../core-concepts/templates.md)
-4. **Explore Examples**: Check out [real-world examples](../examples/simple-modifications.md)

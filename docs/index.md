@@ -25,6 +25,12 @@ OAS Patcher allows you to modify and enhance OpenAPI specifications without dire
 
 ## Quick Example
 
+Install OAS Patcher is using pip:
+
+```bash
+pip install oas-patch
+```
+
 Transform this basic API:
 
 ```yaml title="api.yaml"
@@ -133,14 +139,6 @@ Ready to get started? Follow our step-by-step guides:
     Understand overlays, bundles, and templates
 
     [:octicons-arrow-right-24: Core Concepts](core-concepts/overlays.md)
-
--   :material-rocket-launch:{ .lg .middle } __Examples__
-
-    ---
-
-    Real-world examples and use cases
-
-    [:octicons-arrow-right-24: Examples](examples/README.md)
 
 </div>
 

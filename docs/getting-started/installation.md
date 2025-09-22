@@ -35,7 +35,7 @@ If you want the latest development version or want to contribute:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/oas-patcher.git
+git clone https://github.com/mcroissant/oas_patcher.git
 cd oas-patcher
 ```
 
@@ -77,5 +77,3 @@ Now that OAS Patcher is installed:
 3. 📖 [Core Concepts](../core-concepts/overlays.md) - Understand the fundamentals
 
 ---
-
-**Need help?** Check our [FAQ](../troubleshooting/faq.md) or ask a question in [GitHub Discussions](https://github.com/your-org/oas-patcher/discussions).

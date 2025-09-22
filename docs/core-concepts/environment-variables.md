@@ -495,9 +495,5 @@ echo ${MY_VAR:-default_value}
 ## Next Steps
 
 - [**Bundle Management**](bundles.md) - Organize overlays with environment-specific configurations
-- [**CI/CD Integration Tutorial**](../tutorials/cicd-integration.md) - Step-by-step CI/CD setup
-- [**Advanced Templating**](../tutorials/advanced-templating.md) - Complex template scenarios
 
 ---
-
-Environment variables make your API specifications dynamic and deployment-ready. Continue with [CI/CD Integration](../tutorials/cicd-integration.md) to see them in action!

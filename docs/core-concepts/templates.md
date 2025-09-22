@@ -444,4 +444,3 @@ actions:
 
 - Learn about [Environment Variables](environment-variables.md) in detail
 - Explore [Bundle Management](bundles.md) for organizing templated overlays
-- See [CI/CD Integration](../tutorials/cicd-integration.md) for automated template processing

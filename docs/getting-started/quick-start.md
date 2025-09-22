@@ -5,6 +5,7 @@ Get started with OAS Patcher in just 5 minutes! This guide will walk you through
 ## What You'll Learn
 
 By the end of this guide, you'll know how to:
+
 - Apply overlays to OpenAPI documents
 - Use the CLI effectively
 - Understand basic overlay structure
@@ -257,14 +258,7 @@ Congratulations! You've successfully applied your first overlay. Here's what to 
 3. [**Bundle Management**](../core-concepts/bundles.md) - Organize multiple overlays
 
 ### 🚀 Advanced Topics
-1. [**Environment Variables**](../core-concepts/environment-variables.md) - Dynamic configuration
-2. [**CI/CD Integration**](../tutorials/cicd-integration.md) - Automate your workflow
 3. [**Template Engine**](../core-concepts/templates.md) - Dynamic content generation
-
-### 📋 Reference Materials
-1. [**CLI Reference**](../cli-reference/overview.md) - Complete command documentation
-2. [**Examples**](../examples/simple-modifications.md) - Real-world use cases
-3. [**Troubleshooting**](../troubleshooting/common-issues.md) - Common issues and solutions
 
 ## Tips for Success
 
@@ -275,5 +269,3 @@ Congratulations! You've successfully applied your first overlay. Here's what to 
 📖 **Know JSONPath**: Understanding JSONPath will help you target elements precisely  
 
 ---
-
-**Questions?** Check our [FAQ](../troubleshooting/faq.md) or explore the [Core Concepts](../core-concepts/overlays.md) for deeper understanding.
