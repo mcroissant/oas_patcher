@@ -1,0 +1,10 @@
+name: Invalid Bundle
+description: A bundle with invalid configuration for testing error handling
+version: 1.0.0
+overlays:
+  - path: missing-overlay.yaml
+    description: This overlay file doesn't exist
+  - path: invalid-overlay.yaml
+    description: This overlay has invalid syntax
+variables:
+  test_var: test_value

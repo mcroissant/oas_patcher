@@ -1,0 +1,18 @@
+overlay: 1.0.0
+info:
+  title: Development Overlay
+  version: 1.0.0
+actions:
+  - target: "$.servers"
+    remove: true
+  - target: "$"
+    update:
+      servers:
+        - url: https://dev-api.example.com
+          description: Development server
+        - url: http://localhost:3000
+          description: Local development server
+  - target: "$.info"
+    update:
+      description: "{{ app_name }} - Development Environment"
+      'x-environment': development

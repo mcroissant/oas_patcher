@@ -1,9 +1,13 @@
 import pytest
 from unittest.mock import mock_open, patch
 from oas_patch.file_utils import (
-    load_yaml, load_json, load_file,
-    save_yaml, save_json, save_file,
-    sanitize_content
+    load_yaml,
+    load_json,
+    load_file,
+    save_yaml,
+    save_json,
+    save_file,
+    sanitize_content,
 )
 
 
@@ -82,7 +86,9 @@ def test_save_yaml():
         save_yaml(data, "test.yaml")
         mocked_file.assert_called_once_with("test.yaml", "w", encoding="utf-8")
         # Combine all write calls into a single string and verify the content
-        written_content = "".join(call.args[0] for call in mocked_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mocked_file().write.call_args_list
+        )
         assert written_content == "key: value\n"
 
 
@@ -93,7 +99,9 @@ def test_save_json():
         save_json(data, "test.json")
         mocked_file.assert_called_once_with("test.json", "w", encoding="utf-8")
         # Combine all write calls into a single string and verify the content
-        written_content = "".join(call.args[0] for call in mocked_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mocked_file().write.call_args_list
+        )
         assert written_content == '{\n  "key": "value"\n}'
 
 
@@ -104,7 +112,9 @@ def test_save_file_yaml():
         save_file(data, "test.yaml")
         mocked_file.assert_called_once_with("test.yaml", "w", encoding="utf-8")
         # Combine all write calls into a single string and verify the content
-        written_content = "".join(call.args[0] for call in mocked_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mocked_file().write.call_args_list
+        )
         assert written_content == "key: value\n"
 
 
@@ -115,7 +125,9 @@ def test_save_file_json():
         save_file(data, "test.json")
         mocked_file.assert_called_once_with("test.json", "w", encoding="utf-8")
         # Combine all write calls into a single string and verify the content
-        written_content = "".join(call.args[0] for call in mocked_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mocked_file().write.call_args_list
+        )
         assert written_content == '{\n  "key": "value"\n}'
 
 
@@ -128,6 +140,6 @@ def test_save_file_unsupported_format():
 
 def test_sanitize_content():
     """Test removing non-printable characters from a string."""
-    content = "Valid\x00 content\x1F with invalid\x7F characters"
+    content = "Valid\x00 content\x1f with invalid\x7f characters"
     sanitized = sanitize_content(content)
     assert sanitized == "Valid content with invalid characters"

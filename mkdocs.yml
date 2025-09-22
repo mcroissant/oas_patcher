@@ -1,0 +1,88 @@
+site_name: OAS Patcher Documentation
+site_description: Comprehensive guide for OpenAPI Specification patching and overlay management
+site_author: OAS Patcher Team
+site_url: https://github.com/example/oas-patcher
+
+# Repository
+repo_name: oas-patcher
+repo_url: https://github.com/mcroissant/oas_patcher
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 OAS Patcher Team
+
+# Configuration
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.action.edit
+    - toc.integrate
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Your First Overlay: getting-started/first-overlay.md
+  - Core Concepts:
+    - OpenAPI Overlays: core-concepts/overlays.md
+    - Bundle Management: core-concepts/bundles.md
+    - Template Engine: core-concepts/templates.md
+    - Environment Variables: core-concepts/environment-variables.md
+
+# Plugins
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../src]
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/example/oas-patcher
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/oas-patcher/

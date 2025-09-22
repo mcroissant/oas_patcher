@@ -1,0 +1,30 @@
+overlay: 1.0.0
+info:
+  title: CI/CD Overlay
+  version: 1.0.0
+actions:
+  - target: "$.info"
+    update:
+      'x-build-info':
+        timestamp: "{{ deploy_timestamp }}"
+        build_number: "{{ build_number }}"
+        environment: "{{ environment }}"
+        commit_sha: "{{ env('GIT_COMMIT', 'unknown') }}"
+        pipeline_url: "{{ env('CI_PIPELINE_URL', '') }}"
+      'x-deployment':
+        deployed_by: "{{ env('CI_RUNNER_DESCRIPTION', 'manual') }}"
+        deploy_time: "{{ ENV.BUILD_TIMESTAMP if ENV.BUILD_TIMESTAMP else 'unknown' }}"
+  - target: "$.paths./info.get.responses.200.content.application/json.schema.properties"
+    update:
+      build_info:
+        type: object
+        properties:
+          build_number:
+            type: string
+            example: "{{ build_number }}"
+          environment:
+            type: string
+            example: "{{ environment }}"
+          commit_sha:
+            type: string
+            example: "{{ env('GIT_COMMIT', 'abc123') }}"
