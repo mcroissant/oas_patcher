@@ -1,7 +1,7 @@
 site_name: OAS Patcher Documentation
 site_description: Comprehensive guide for OpenAPI Specification patching and overlay management
 site_author: OAS Patcher Team
-site_url: https://github.com/example/oas-patcher
+site_url: https://mcroissant.github.io/oas_patcher
 
 # Repository
 repo_name: oas-patcher
