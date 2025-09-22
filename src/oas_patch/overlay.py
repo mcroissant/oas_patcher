@@ -5,8 +5,8 @@ from jsonpath_ng.ext import parse
 
 def apply_overlay(openapi_doc, overlay):
     """Apply overlay actions to the OpenAPI document."""
-    for action in overlay.get('actions', []):
-        jsonpath_expr = parse(action['target'])
+    for action in overlay.get("actions", []):
+        jsonpath_expr = parse(action["target"])
         for match in jsonpath_expr.find(openapi_doc):
             parent, key = _get_parent_and_key(match, openapi_doc)
             _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc)
@@ -18,9 +18,9 @@ def _get_parent_and_key(match, openapi_doc):
     if match.context is None:
         return openapi_doc, None  # Root of the document
     parent = match.context.value
-    if hasattr(match.path, 'fields'):
+    if hasattr(match.path, "fields"):
         key = match.path.fields[0]
-    elif hasattr(match.path, 'index'):
+    elif hasattr(match.path, "index"):
         key = match.path.index
     else:
         key = None
@@ -30,14 +30,14 @@ def _get_parent_and_key(match, openapi_doc):
 def _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc):
     """Apply a single action to the matched part of the document."""
     if match.context is not None:
-        if 'remove' in action:
+        if "remove" in action:
             jsonpath_expr.filter(lambda d: True, openapi_doc)
-        elif 'update' in action:
-            _apply_update(parent, key, action['update'])
+        elif "update" in action:
+            _apply_update(parent, key, action["update"])
     elif parent is openapi_doc:  # Handle the case where the matched item is the root
-        if 'update' in action:
-            _apply_root_update(openapi_doc, action['update'])
-        elif 'remove' in action:
+        if "update" in action:
+            _apply_root_update(openapi_doc, action["update"])
+        elif "remove" in action:
             raise ValueError("Cannot remove the root of the document")
 
 
@@ -70,9 +70,17 @@ def deep_update(target, updates):
     while stack:
         current_target, current_updates = stack.pop()
         for key, value in current_updates.items():
-            if isinstance(value, dict) and key in current_target and isinstance(current_target[key], dict):
+            if (
+                isinstance(value, dict)
+                and key in current_target
+                and isinstance(current_target[key], dict)
+            ):
                 stack.append((current_target[key], value))
-            elif isinstance(value, list) and key in current_target and isinstance(current_target[key], list):
+            elif (
+                isinstance(value, list)
+                and key in current_target
+                and isinstance(current_target[key], list)
+            ):
                 current_target[key].extend(value)
             else:
                 current_target[key] = value

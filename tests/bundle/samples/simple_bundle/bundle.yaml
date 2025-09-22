@@ -1,0 +1,9 @@
+name: Simple Bundle
+description: A basic bundle with a single overlay
+version: 1.0.0
+overlays:
+  - path: basic-overlay.yaml
+    description: Basic API information update
+variables:
+  api_title: Simple API
+  api_version: "1.0.0"

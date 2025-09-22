@@ -1,0 +1,34 @@
+overlay: 1.0.0
+info:
+  title: Paths Overlay
+  version: 1.0.0
+actions:
+  - target: "$.paths"
+    update:
+      '/pets/{id}':
+        get:
+          summary: Get a pet by ID
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            '200':
+              description: Pet details
+            '404':
+              description: Pet not found
+        put:
+          summary: Update a pet
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            '200':
+              description: Pet updated
+            '404':
+              description: Pet not found

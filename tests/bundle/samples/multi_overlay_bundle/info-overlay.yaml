@@ -1,0 +1,13 @@
+overlay: 1.0.0
+info:
+  title: Info Overlay
+  version: 1.0.0
+actions:
+  - target: "$.info"
+    update:
+      title: "{{ api_name }}"
+      version: "{{ api_version }}"
+      description: "A comprehensive {{ api_name }} with multiple endpoints"
+      contact:
+        name: API Support
+        email: support@petstore.com

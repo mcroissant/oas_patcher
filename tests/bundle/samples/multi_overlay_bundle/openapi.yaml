@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Base API
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      responses:
+        '200':
+          description: A list of pets
+    post:
+      summary: Create a new pet
+      responses:
+        '201':
+          description: Pet created
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string

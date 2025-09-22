@@ -1,0 +1,18 @@
+name: Template Bundle
+description: A bundle demonstrating advanced templating features
+version: 1.0.0
+overlays:
+  - path: template-overlay.yaml
+    description: Overlay with advanced Jinja2 templating
+    variables:
+      endpoints:
+        - name: users
+          methods: [GET, POST]
+        - name: products
+          methods: [GET, POST, PUT, DELETE]
+      auth_required: true
+variables:
+  api_title: Templated API
+  api_version: "3.0.0"
+  base_url: https://api.template.com
+  owner: Template Corp

@@ -1,0 +1,10 @@
+overlay: 1.0.0
+info:
+  title: Basic Overlay
+  version: 1.0.0
+actions:
+  - target: "$.info"
+    update:
+      title: "{{ api_title }}"
+      version: "{{ api_version }}"
+      description: "Updated via bundle overlay"

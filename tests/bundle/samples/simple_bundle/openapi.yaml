@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+  description: Original API description
+paths:
+  /pets:
+    get:
+      summary: List pets
+      responses:
+        '200':
+          description: A list of pets

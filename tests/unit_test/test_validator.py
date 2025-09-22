@@ -18,16 +18,8 @@ def test_load_schema_not_found():
 def test_validate_valid_overlay():
     overlay_file = {
         "overlay": "1.0.0",
-        "info": {
-            "title": "Update petstore API",
-            "version": "1.0.0"
-            },
-        "actions": [
-            {
-                "target": "$.info.title",
-                "update": "Updated API"
-            }
-        ]
+        "info": {"title": "Update petstore API", "version": "1.0.0"},
+        "actions": [{"target": "$.info.title", "update": "Updated API"}],
     }
     # Test different output formats
     for format in ["sh", "log", "yaml"]:
@@ -44,15 +36,8 @@ def test_validate_valid_overlay():
 def test_validate_invalid_overlay():
     overlay_file = {
         "overly": "1.0.0",
-        "inf": {
-            "title": "Update petstore API",
-            "version": "1.0.0"
-            },
-        "actions": [
-            {
-                "update": "Updated API"
-            }
-        ]
+        "inf": {"title": "Update petstore API", "version": "1.0.0"},
+        "actions": [{"update": "Updated API"}],
     }
     # Test different output formats
     for format in ["sh", "log", "yaml"]:
@@ -75,7 +60,7 @@ def test_format_errors():
 
     errors = [
         MockError("Error 1", ["path", "to", "error"]),
-        MockError("Error 2", ["another", "path"])
+        MockError("Error 2", ["another", "path"]),
     ]
 
     # Test YAML format
