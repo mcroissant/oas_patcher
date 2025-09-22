@@ -42,8 +42,6 @@ oas-patch diff original.yaml modified.yaml -o overlay.yaml
 oas-patch validate overlay.yaml
 ```
 
-[View full CLI reference →](https://mcroissant.github.io/oas_patcher/cli-reference/overview/)
-
 ## Example
 
 ```yaml
@@ -58,14 +56,12 @@ actions:
         - url: https://api.production.com
 ```
 
-[More examples →](https://mcroissant.github.io/oas_patcher/examples/)
 
 ## Documentation
 
 - 📚 [Full Documentation](https://mcroissant.github.io/oas_patcher/)
 - 🚀 [Getting Started Guide](https://mcroissant.github.io/oas_patcher/getting-started/quick-start/)
 - 💡 [Core Concepts](https://mcroissant.github.io/oas_patcher/core-concepts/overlays/)
-- 📖 [API Reference](https://mcroissant.github.io/oas_patcher/api-reference/)
 
 ## Contributing
 
