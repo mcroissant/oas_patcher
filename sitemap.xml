@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/core-concepts/bundles/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/core-concepts/environment-variables/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/core-concepts/overlays/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/core-concepts/templates/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/getting-started/first-overlay/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/getting-started/installation/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+    <url>
+         <loc>https://mcroissant.github.io/oas_patcher/getting-started/quick-start/</loc>
+         <lastmod>2025-09-22</lastmod>
+    </url>
+</urlset>
