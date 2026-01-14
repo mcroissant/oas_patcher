@@ -5,6 +5,7 @@ Bundle management is one of the most powerful features of OAS Patcher, allowing 
 ## What are Bundles?
 
 A bundle is a collection of overlays with associated configuration that defines:
+
 - Which overlays to apply and in what order
 - Environment-specific filtering
 - Variable definitions and template processing
@@ -197,6 +198,7 @@ overlays:
 ### 1. Logical Grouping
 
 Group related overlays into bundles:
+
 - **Environment bundles**: Different configurations per environment
 - **Feature bundles**: Sets of overlays that enable specific features
 - **Compliance bundles**: Security and regulatory requirements
