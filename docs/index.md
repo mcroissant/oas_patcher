@@ -4,9 +4,10 @@ Welcome to the comprehensive documentation for **OAS Patcher** - a powerful tool
 
 ## What is OAS Patcher?
 
-OAS Patcher allows you to modify and enhance OpenAPI specifications without directly editing the source files. Using the [OpenAPI Overlay specification](https://spec.openapis.org/overlay/v1.0.0), you can:
+OAS Patcher allows you to modify and enhance OpenAPI specifications without directly editing the source files. Using the [OpenAPI Overlay specification](https://spec.openapis.org/overlay/v1.0.0) (supporting both 1.0 and 1.1), you can:
 
 - **Add or modify** any part of an OpenAPI specification
+- **Copy and duplicate** schemas and components (Overlay 1.1)
 - **Manage multiple environments** with different configurations
 - **Use templates and variables** for dynamic content generation
 - **Organize changes** into reusable, shareable overlays
@@ -16,7 +17,8 @@ OAS Patcher allows you to modify and enhance OpenAPI specifications without dire
 
 !!! tip "Why Use OAS Patcher?"
     
-    - ✅ **Standards-based** - Uses the official OpenAPI Overlay specification
+    - ✅ **Standards-based** - Uses the official OpenAPI Overlay specification (1.0 & 1.1)
+    - ✅ **Latest features** - Support for Overlay 1.1 copy action
     - ✅ **Environment-aware** - Different configurations for dev, staging, production
     - ✅ **Template support** - Jinja2 templating with environment variables
     - ✅ **Bundle management** - Organize and apply multiple overlays together
@@ -50,7 +52,7 @@ paths:
 With this simple overlay:
 
 ```yaml title="add-server.yaml"
-overlay: 1.0.0
+overlay: 1.1.0
 info:
   title: Add Production Server
   version: 1.0.0
