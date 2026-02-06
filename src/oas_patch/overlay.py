@@ -32,10 +32,14 @@ def _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc):
     if match.context is not None:
         if "remove" in action:
             jsonpath_expr.filter(lambda d: True, openapi_doc)
+        elif "copy" in action:
+            _apply_copy(parent, key, action["copy"], openapi_doc)
         elif "update" in action:
             _apply_update(parent, key, action["update"])
     elif parent is openapi_doc:  # Handle the case where the matched item is the root
-        if "update" in action:
+        if "copy" in action:
+            _apply_root_copy(openapi_doc, action["copy"], openapi_doc)
+        elif "update" in action:
             _apply_root_update(openapi_doc, action["update"])
         elif "remove" in action:
             raise ValueError("Cannot remove the root of the document")
@@ -62,6 +66,46 @@ def _apply_root_update(openapi_doc, update):
         deep_update(openapi_doc, update)
     else:
         raise ValueError("Cannot perform non-dict update on the root of the document")
+
+
+def _apply_copy(parent, key, copy_path, openapi_doc):
+    """Apply a copy action to the parent using a JSONPath to find the source."""
+    jsonpath_expr = parse(copy_path)
+    matches = jsonpath_expr.find(openapi_doc)
+    
+    if not matches:
+        # No matches found, no action taken
+        return
+    
+    # Use the first match as the source value
+    source_value = matches[0].value
+    
+    # Apply the copied value similar to update
+    if isinstance(parent, list):
+        parent[key] = source_value
+    elif isinstance(parent.get(key), dict) and isinstance(source_value, dict):
+        deep_update(parent[key], source_value)
+    elif isinstance(parent.get(key), list) and isinstance(source_value, list):
+        parent[key] = source_value
+    else:
+        parent[key] = source_value
+
+
+def _apply_root_copy(openapi_doc, copy_path, source_doc):
+    """Apply a copy action to the root of the document."""
+    jsonpath_expr = parse(copy_path)
+    matches = jsonpath_expr.find(source_doc)
+    
+    if not matches:
+        # No matches found, no action taken
+        return
+    
+    source_value = matches[0].value
+    
+    if isinstance(source_value, dict):
+        deep_update(openapi_doc, source_value)
+    else:
+        raise ValueError("Cannot perform non-dict copy on the root of the document")
 
 
 def deep_update(target, updates):

@@ -17,7 +17,7 @@ def create_overlay(source_doc, target_doc):
     # Compute the differences
     diff = DeepDiff(source_doc, target_doc, view="tree", ignore_order=True)
     overlay = {
-        "overlay": "1.0.0",
+        "overlay": "1.1.0",
         "info": {"title": "oas-patch generated overlay", "version": "1.0.0"},
         "actions": [],
     }

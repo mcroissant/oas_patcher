@@ -1,0 +1,10 @@
+overlay: 1.1.0
+info:
+  title: Primitive Value Update
+  version: 1.0.0
+  description: Demonstrates direct primitive value updates in overlay 1.1.0
+actions:
+  - target: '$.paths["/users"].get.description'
+    update: Updated description for the get users endpoint
+  - target: '$.paths["/users"].get.summary'
+    update: List Users
