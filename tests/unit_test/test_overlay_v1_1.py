@@ -24,16 +24,9 @@ def test_overlay_v1_1_copy_action():
         "info": {"title": "Copy test", "version": "1.0.0"},
         "actions": [
             {
-                "target": "$.components.schemas",
-                "description": "Ensure the target schema is present",
-                # Note: The copy action requires the target path to exist before copying.
-                # This is consistent with the update action behavior.
-                "update": {"Bar": {}}
-            },
-            {
                 "target": "$.components.schemas['Bar']",
                 "copy": "$.components.schemas['Foo']",
-                "description": "Copy the Foo Schema to Bar"
+                "description": "Copy the Foo Schema to Bar (creates Bar if it doesn't exist)"
             }
         ]
     }
@@ -45,6 +38,8 @@ def test_overlay_v1_1_copy_action():
     assert result["components"]["schemas"]["Bar"]["type"] == "object"
     assert "id" in result["components"]["schemas"]["Bar"]["properties"]
     assert "name" in result["components"]["schemas"]["Bar"]["properties"]
+    # Ensure Foo is still intact
+    assert "Foo" in result["components"]["schemas"]
 
 
 def test_overlay_v1_1_copy_with_dot_notation():
@@ -108,6 +103,47 @@ def test_overlay_v1_1_copy_nonexistent_source():
     # Should not change anything if source doesn't exist
     assert result["info"]["title"] == "Test API"
     assert result["info"]["version"] == "1.0.0"
+
+
+def test_overlay_v1_1_copy_to_nonexistent_target():
+    """Test copy action automatically creates target if it doesn't exist."""
+    openapi_doc = {
+        "info": {"title": "Test API", "version": "1.0.0"},
+        "components": {
+            "schemas": {
+                "User": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"}
+                    }
+                }
+            }
+        }
+    }
+    
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Copy test", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.components.schemas['Admin']",
+                "copy": "$.components.schemas['User']",
+                "description": "Copy User to non-existent Admin schema"
+            }
+        ]
+    }
+    
+    result = apply_overlay(openapi_doc, overlay)
+    
+    # Admin should be created with User's structure
+    assert "Admin" in result["components"]["schemas"]
+    assert result["components"]["schemas"]["Admin"]["type"] == "object"
+    assert "id" in result["components"]["schemas"]["Admin"]["properties"]
+    assert "name" in result["components"]["schemas"]["Admin"]["properties"]
+    # Ensure User is unchanged
+    assert "User" in result["components"]["schemas"]
+    assert result["components"]["schemas"]["User"]["type"] == "object"
 
 
 def test_overlay_v1_1_primitive_value_update():

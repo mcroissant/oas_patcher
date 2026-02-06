@@ -7,7 +7,13 @@ def apply_overlay(openapi_doc, overlay):
     """Apply overlay actions to the OpenAPI document."""
     for action in overlay.get("actions", []):
         jsonpath_expr = parse(action["target"])
-        for match in jsonpath_expr.find(openapi_doc):
+        matches = list(jsonpath_expr.find(openapi_doc))
+        
+        # If no matches and this is a copy action, try to create the target
+        if not matches and "copy" in action:
+            matches = _create_target_for_copy(openapi_doc, action["target"], jsonpath_expr)
+        
+        for match in matches:
             parent, key = _get_parent_and_key(match, openapi_doc)
             _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc)
     return openapi_doc
@@ -25,6 +31,58 @@ def _get_parent_and_key(match, openapi_doc):
     else:
         key = None
     return parent, key
+
+
+def _create_target_for_copy(openapi_doc, target_path, jsonpath_expr):
+    """
+    Create a target path for copy action if it doesn't exist.
+    Returns a list with a synthetic match object for the created target.
+    """
+    import re
+    
+    # Try to parse the target path to extract parent and key
+    # Pattern for $.path.to.parent['key'] or $.path.to.parent.key
+    bracket_pattern = r"^(.+)\['([^']+)'\]$"
+    dot_pattern = r"^(.+)\.([^.]+)$"
+    
+    parent_path = None
+    key = None
+    
+    # Try bracket notation first
+    match = re.match(bracket_pattern, target_path)
+    if match:
+        parent_path = match.group(1)
+        key = match.group(2)
+    else:
+        # Try dot notation
+        match = re.match(dot_pattern, target_path)
+        if match:
+            parent_path = match.group(1)
+            key = match.group(2)
+    
+    if not parent_path or not key:
+        # Can't parse the path, return empty list
+        return []
+    
+    # Find the parent
+    parent_expr = parse(parent_path)
+    parent_matches = list(parent_expr.find(openapi_doc))
+    
+    if not parent_matches:
+        # Parent doesn't exist either, can't create
+        return []
+    
+    parent = parent_matches[0].value
+    
+    # Create a placeholder in the parent
+    if isinstance(parent, dict):
+        parent[key] = None  # Placeholder that will be replaced by copy
+        
+        # Now find the newly created path
+        new_matches = list(jsonpath_expr.find(openapi_doc))
+        return new_matches
+    
+    return []
 
 
 def _apply_action(jsonpath_expr, parent, key, match, action, openapi_doc):
@@ -80,14 +138,20 @@ def _apply_copy(parent, key, copy_path, openapi_doc):
     # Use the first match as the source value
     source_value = matches[0].value
     
-    # Apply the copied value similar to update
+    # Create a deep copy to avoid reference issues
+    import copy
+    source_value = copy.deepcopy(source_value)
+    
+    # Apply the copied value - create target if it doesn't exist
     if isinstance(parent, list):
-        parent[key] = source_value
-    elif isinstance(parent.get(key), dict) and isinstance(source_value, dict):
-        deep_update(parent[key], source_value)
-    elif isinstance(parent.get(key), list) and isinstance(source_value, list):
+        # For list indices, the target should exist
+        if key < len(parent):
+            parent[key] = source_value
+    elif isinstance(parent, dict):
+        # For dictionaries, create or replace the key
         parent[key] = source_value
     else:
+        # For other cases, just set the value
         parent[key] = source_value
 
 
