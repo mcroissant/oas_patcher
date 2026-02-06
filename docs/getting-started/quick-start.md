@@ -55,10 +55,11 @@ paths:
 Create an overlay that modifies the API for production:
 
 ```yaml
-overlay: 1.0.0
+overlay: 1.1.0
 info:
   title: Production Configuration Overlay
   version: 1.0.0
+  description: Transforms API for production use
 actions:
   # Replace development server with production server
   - target: "$.servers"
@@ -100,6 +101,8 @@ actions:
       security:
         - ApiKeyAuth: []
 ```
+
+> **Note**: This example uses Overlay 1.1.0 which includes the `info.description` field. You can also use `overlay: 1.0.0` for basic compatibility.
 
 ## Step 2: Apply the Overlay
 
