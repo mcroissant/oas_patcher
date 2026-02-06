@@ -26,6 +26,8 @@ def test_overlay_v1_1_copy_action():
             {
                 "target": "$.components.schemas",
                 "description": "Ensure the target schema is present",
+                # Note: The copy action requires the target path to exist before copying.
+                # This is consistent with the update action behavior.
                 "update": {"Bar": {}}
             },
             {

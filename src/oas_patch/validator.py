@@ -92,7 +92,9 @@ def validate(overlay_doc, output_format):
         # Handle case where overlay_doc is not a dict
         if isinstance(overlay_doc, dict):
             overlay_version = overlay_doc.get("overlay", "")
-            if overlay_version.startswith("1.1."):
+            # Use regex to match 1.1.x pattern to be consistent with schema
+            import re
+            if re.match(r'^1\.1\.\d+$', overlay_version):
                 schema_file = "overlay_schema_1.1.0.yml"
             else:
                 # Default to 1.0.0 schema for backward compatibility
