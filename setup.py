@@ -9,7 +9,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='oas_patch',
-    version='0.5.6',
+    version='0.6.0',
     description='A complete cli/lib to apply overlays to OpenAPI documents, powering your ci/cd and API lifecycle',
     long_description=long_description,
     long_description_content_type='text/markdown',
