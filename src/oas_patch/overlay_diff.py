@@ -38,7 +38,7 @@ def create_overlay(source_doc, target_doc):
             removed_keys = set(diff_item.t1.keys()) - set(diff_item.t2.keys())
             path_list = diff_item.path(output_format="list")
             base_path = _generate_path(path_list)
-            
+
             # Generate remove actions for each removed key
             for key in removed_keys:
                 remove_path = f"{base_path}.{key}" if not base_path.endswith("]") else f"{base_path}['{key}']"

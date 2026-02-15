@@ -1,5 +1,4 @@
 """Tests for Overlay 1.1.0 features."""
-import pytest
 from oas_patch.overlay import apply_overlay
 
 
@@ -18,7 +17,7 @@ def test_overlay_v1_1_copy_action():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Copy test", "version": "1.0.0"},
@@ -30,9 +29,9 @@ def test_overlay_v1_1_copy_action():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # Bar should now have the same structure as Foo
     assert "Bar" in result["components"]["schemas"]
     assert result["components"]["schemas"]["Bar"]["type"] == "object"
@@ -52,7 +51,7 @@ def test_overlay_v1_1_copy_with_dot_notation():
         },
         "paths": {}
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Copy test", "version": "1.0.0"},
@@ -72,9 +71,9 @@ def test_overlay_v1_1_copy_with_dot_notation():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # The get operation should have info copied to it
     assert result["paths"]["/example"]["get"]["title"] == "Original API"
     assert result["paths"]["/example"]["get"]["description"] == "Original description"
@@ -85,7 +84,7 @@ def test_overlay_v1_1_copy_nonexistent_source():
     openapi_doc = {
         "info": {"title": "Test API", "version": "1.0.0"}
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Copy test", "version": "1.0.0"},
@@ -97,9 +96,9 @@ def test_overlay_v1_1_copy_nonexistent_source():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # Should not change anything if source doesn't exist
     assert result["info"]["title"] == "Test API"
     assert result["info"]["version"] == "1.0.0"
@@ -121,7 +120,7 @@ def test_overlay_v1_1_copy_to_nonexistent_target():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Copy test", "version": "1.0.0"},
@@ -133,9 +132,9 @@ def test_overlay_v1_1_copy_to_nonexistent_target():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # Admin should be created with User's structure
     assert "Admin" in result["components"]["schemas"]
     assert result["components"]["schemas"]["Admin"]["type"] == "object"
@@ -163,7 +162,7 @@ def test_overlay_v1_1_primitive_value_update():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {
@@ -182,9 +181,9 @@ def test_overlay_v1_1_primitive_value_update():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     assert result["paths"]["/foo"]["get"]["description"] == "This is the new description"
     assert result["paths"]["/bar"]["get"]["description"] == "This is the updated description"
     # Summary should remain unchanged
@@ -204,7 +203,7 @@ def test_overlay_v1_1_remove_primitive_value():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Remove primitive", "version": "1.0.0"},
@@ -215,9 +214,9 @@ def test_overlay_v1_1_remove_primitive_value():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     assert "deprecated" not in result["paths"]["/example"]["get"]
     assert result["paths"]["/example"]["get"]["summary"] == "Test summary"
 
@@ -225,7 +224,7 @@ def test_overlay_v1_1_remove_primitive_value():
 def test_overlay_v1_1_info_description():
     """Test that overlay info object can have a description field."""
     openapi_doc = {"info": {"title": "Test", "version": "1.0.0"}}
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {
@@ -240,9 +239,9 @@ def test_overlay_v1_1_info_description():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # The overlay itself should be valid (will be tested by validation tests)
     # Here we just ensure applying it works
     assert result["info"]["x-custom"] == "value"
@@ -260,7 +259,7 @@ def test_overlay_v1_1_copy_array():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Copy array", "version": "1.0.0"},
@@ -271,9 +270,9 @@ def test_overlay_v1_1_copy_array():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     # Security should now be a copy of tags
     assert result["paths"]["/example"]["get"]["security"] == ["public", "user"]
 
@@ -291,7 +290,7 @@ def test_overlay_v1_1_combined_actions():
             }
         }
     }
-    
+
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "Combined actions", "version": "1.0.0"},
@@ -310,9 +309,9 @@ def test_overlay_v1_1_combined_actions():
             }
         ]
     }
-    
+
     result = apply_overlay(openapi_doc, overlay)
-    
+
     assert result["info"]["title"] == "Updated API"
     assert "Admin" in result["components"]["schemas"]
     assert result["components"]["schemas"]["Admin"]["type"] == "object"

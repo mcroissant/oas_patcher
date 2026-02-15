@@ -102,7 +102,7 @@ def validate(overlay_doc, output_format):
         else:
             # If not a dict, default to 1.0.0 schema which will catch the type error
             schema_file = "overlay_schema_1.0.0.yml"
-        
+
         # Validate as Overlay
         overlay_schema = load_schema(schema_file)
         validator = Draft202012Validator(overlay_schema)

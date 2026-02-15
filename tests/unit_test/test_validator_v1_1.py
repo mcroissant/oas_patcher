@@ -1,5 +1,4 @@
 """Tests for Overlay 1.1.0 schema validation."""
-import pytest
 from oas_patch.validator import validate
 
 
@@ -18,7 +17,7 @@ def test_validate_v1_1_basic_overlay():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -38,7 +37,7 @@ def test_validate_v1_1_with_copy_action():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -59,7 +58,7 @@ def test_validate_v1_1_with_info_description():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -79,7 +78,7 @@ def test_validate_v1_1_invalid_version():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[ERROR]" in result
 
@@ -107,7 +106,7 @@ def test_validate_v1_1_with_all_action_types():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -133,7 +132,7 @@ def test_validate_v1_1_with_action_descriptions():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -153,7 +152,7 @@ def test_validate_v1_0_still_works():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -173,7 +172,7 @@ def test_validate_v1_0_with_copy_fails():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[ERROR]" in result
     # The error should mention unevaluated properties since copy is not in 1.0 schema
@@ -196,7 +195,7 @@ def test_validate_v1_1_patch_versions():
                 }
             ]
         }
-        
+
         result = validate(overlay, "log")
         assert "[INFO] Validation successful" in result, f"Failed for version 1.1.{patch}"
 
@@ -217,7 +216,7 @@ def test_validate_v1_1_with_extends():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -240,7 +239,7 @@ def test_validate_v1_1_with_x_extensions():
             }
         ]
     }
-    
+
     result = validate(overlay, "log")
     assert "[INFO] Validation successful" in result
 
@@ -257,11 +256,11 @@ def test_validate_v1_1_missing_required_fields():
             }
         ]
     }
-    
+
     result1 = validate(overlay1, "log")
     assert "[ERROR]" in result1
     assert "'info' is a required property" in result1
-    
+
     # Missing actions
     overlay2 = {
         "overlay": "1.1.0",
@@ -270,7 +269,7 @@ def test_validate_v1_1_missing_required_fields():
             "version": "1.0.0"
         }
     }
-    
+
     result2 = validate(overlay2, "log")
     assert "[ERROR]" in result2
     assert "'actions' is a required property" in result2
@@ -286,7 +285,7 @@ def test_validate_v1_1_empty_actions():
         },
         "actions": []
     }
-    
+
     result = validate(overlay, "log")
     assert "[ERROR]" in result
     # Should fail minItems validation
