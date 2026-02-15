@@ -49,7 +49,7 @@ actions:
 
 ### Breaking It Down
 
-- **overlay: 1.0.0** - The overlay format version
+- **overlay: 1.0.0** - The overlay format version (use 1.1.0 for copy action support)
 - **info** - Metadata about this overlay
 - **actions** - The changes to make
 - **target: "$"** - Where to make the change (JSONPath), one specificity here is that the path you want to update needs to exist so $.servers wouldn't work
@@ -139,7 +139,50 @@ Apply it:
 oas-patch overlay api-documented.yaml 03-add-security.yaml --output api-complete.yaml
 ```
 
-## Step 5: The Problem with Multiple Commands
+## Step 5: Using Copy Action (Overlay 1.1)
+
+If you're using Overlay 1.1, you can use the powerful `copy` action to duplicate schemas. This is especially useful when you need schema variations:
+
+Create `04-add-audiobook-schema.yaml`:
+
+```yaml
+overlay: 1.1.0
+info:
+  title: Add Audiobook Schema via Copy
+  version: 1.0.0
+  description: Demonstrates the copy action feature
+actions:
+  # First, ensure we have a Book schema
+  - target: "$.components.schemas"
+    update:
+      Book:
+        type: object
+        properties:
+          id:
+            type: integer
+          title:
+            type: string
+          author:
+            type: string
+  
+  # Now copy Book to create Audiobook (automatically created)
+  - target: "$.components.schemas.Audiobook"
+    copy: "$.components.schemas.Book"
+    description: "Copy Book schema to Audiobook"
+  
+  # Customize the Audiobook schema
+  - target: "$.components.schemas.Audiobook.properties"
+    update:
+      narrator:
+        type: string
+      duration:
+        type: integer
+        description: "Duration in minutes"
+```
+
+The copy action automatically creates the target if it doesn't exist, making it much simpler than manually duplicating schemas!
+
+## Step 6: The Problem with Multiple Commands
 
 You might have noticed we're running multiple commands and managing intermediate files:
 
@@ -170,6 +213,7 @@ In this tutorial, you learned:
 ✅ **Basic overlay structure** - Every overlay needs `overlay`, `info`, and `actions`  
 ✅ **JSONPath targeting** - Use `$.path.to.property` to target specific locations  
 ✅ **Update operations** - Replace or add content with `update`  
+✅ **Copy action (1.1)** - Duplicate schemas and components with `copy`  
 ✅ **Multiple overlays** - Apply several overlays to build up changes gradually  
 
 

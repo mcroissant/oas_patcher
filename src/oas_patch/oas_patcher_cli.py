@@ -572,7 +572,7 @@ def init(force):
 
         # Create example overlays
         version_overlay = {
-            "overlay": "1.0.0",
+            "overlay": "1.1.0",
             "info": {"title": "Example API Bundle", "version": "{{ api_version }}"},
             "actions": [
                 {"target": "$.info", "update": {"x-api-version": "{{ api_version }}"}}
@@ -583,7 +583,7 @@ def init(force):
             yaml.dump(version_overlay, f, sort_keys=False, default_flow_style=False)
 
         server_overlay = {
-            "overlay": "1.0.0",
+            "overlay": "1.1.0",
             "info": {"title": "Example Server Configuration"},
             "actions": [
                 {

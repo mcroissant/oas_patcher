@@ -17,7 +17,7 @@ def create_overlay(source_doc, target_doc):
     # Compute the differences
     diff = DeepDiff(source_doc, target_doc, view="tree", ignore_order=True)
     overlay = {
-        "overlay": "1.0.0",
+        "overlay": "1.1.0",
         "info": {"title": "oas-patch generated overlay", "version": "1.0.0"},
         "actions": [],
     }
@@ -30,6 +30,19 @@ def create_overlay(source_doc, target_doc):
     for diff_item in diff.get("iterable_item_removed", []):
         action = _diff_to_action(diff_item, ActionType.REMOVE)
         overlay[ACTIONS_FIELD].append(action)
+
+    # Check for removed keys in values_changed where objects are being replaced
+    for diff_item in diff.get("values_changed", []):
+        if isinstance(diff_item.t1, dict) and isinstance(diff_item.t2, dict):
+            # Find keys that were removed when the object changed
+            removed_keys = set(diff_item.t1.keys()) - set(diff_item.t2.keys())
+            path_list = diff_item.path(output_format="list")
+            base_path = _generate_path(path_list)
+
+            # Generate remove actions for each removed key
+            for key in removed_keys:
+                remove_path = f"{base_path}.{key}" if not base_path.endswith("]") else f"{base_path}['{key}']"
+                overlay[ACTIONS_FIELD].append({"target": remove_path, "remove": True})
 
     # Add update actions next
     for diff_item in diff.get("values_changed", []):

@@ -1,0 +1,9 @@
+overlay: 1.1.0
+info:
+  title: Copy Schema Example
+  version: 1.0.0
+  description: Demonstrates the new copy action in overlay 1.1.0
+actions:
+  - target: '$.components.schemas.Admin'
+    copy: '$.components.schemas.User'
+    description: Copy the User schema to Admin schema (creates Admin automatically)
