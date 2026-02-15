@@ -2,8 +2,8 @@
 
 import json
 import pytest
-from src.oas_patch.overlay_diff import create_overlay
-from src.oas_patch.overlay import apply_overlay
+from oas_patch.overlay_diff import create_overlay
+from oas_patch.overlay import apply_overlay
 
 
 def test_patternProperties_removal():
