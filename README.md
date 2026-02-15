@@ -6,8 +6,6 @@ A powerful command-line tool and Python library for working with OpenAPI Specifi
 [![PyPI version](https://badge.fury.io/py/oas-patch.svg)](https://badge.fury.io/py/oas-patch)
 [![Overlay Spec](https://img.shields.io/badge/Overlay-1.0%20%7C%201.1-green)](https://github.com/OAI/Overlay-Specification)
 
-> **Try it now:** [Online Demo](https://vbtn4932y3.execute-api.us-east-1.amazonaws.com/dev/)
-
 ## Key Features
 
 🎯 **Overlay System** - Apply targeted modifications to OpenAPI documents  
