@@ -33,6 +33,7 @@ actions:
 ### Overlay Header
 
 Every overlay must include:
+
 - `overlay`: The overlay specification version (use "1.1.0" for latest features, or "1.0.0" for compatibility)
 - `info`: Metadata about the overlay including title and version
   - `title`: (required) A descriptive title for the overlay
@@ -43,6 +44,7 @@ Every overlay must include:
 
 Actions define the specific modifications to apply. Each action includes:
 - `target`: A JSONPath expression pointing to the element to modify
+
 - `description`: (optional) A description of what this action does
 - Operation: One of `update`, `remove`, or `copy` (Overlay 1.1+)
 

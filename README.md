@@ -4,6 +4,7 @@ A powerful command-line tool and Python library for working with OpenAPI Specifi
 
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://mcroissant.github.io/oas_patcher/)
 [![PyPI version](https://badge.fury.io/py/oas-patch.svg)](https://badge.fury.io/py/oas-patch)
+
 [![Overlay Spec](https://img.shields.io/badge/Overlay-1.0%20%7C%201.1-green)](https://github.com/OAI/Overlay-Specification)
 
 ## Key Features
@@ -55,6 +56,7 @@ info:
   description: Configures the API for production use
 actions:
   # Update server URL
+
   - target: "$"
     update:
       servers:
@@ -64,6 +66,7 @@ actions:
   - target: "$.components.schemas.AdminUser"
     copy: "$.components.schemas.User"
     description: Create AdminUser schema based on User schema
+
 ```
 
 
