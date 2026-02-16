@@ -1,0 +1,29 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 1.0.0
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+paths:
+  /users:
+    get:
+      summary: Get all users
+      description: Retrieve all users from the system

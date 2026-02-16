@@ -2,6 +2,10 @@
 
 Environment variables provide dynamic configuration for your overlays and bundles, making them perfect for CI/CD pipelines and multi-environment deployments.
 
+
+
+> **Note**: Environment variable features work with both Overlay 1.0.x and 1.1.x. Examples in this guide use 1.0.0 for simplicity, but you can use 1.1.0 to access additional features like the `copy` action.
+
 ## Overview
 
 OAS Patcher supports environment variables through multiple mechanisms:

@@ -88,8 +88,23 @@ def validate(overlay_doc, output_format):
         str: Formatted validation results or error message
     """
     try:
+        # Determine schema version based on overlay version field
+        # Handle case where overlay_doc is not a dict
+        if isinstance(overlay_doc, dict):
+            overlay_version = overlay_doc.get("overlay", "")
+            # Use regex to match 1.1.x pattern to be consistent with schema
+            import re
+            if re.match(r'^1\.1\.\d+$', overlay_version):
+                schema_file = "overlay_schema_1.1.0.yml"
+            else:
+                # Default to 1.0.0 schema for backward compatibility
+                schema_file = "overlay_schema_1.0.0.yml"
+        else:
+            # If not a dict, default to 1.0.0 schema which will catch the type error
+            schema_file = "overlay_schema_1.0.0.yml"
+
         # Validate as Overlay
-        overlay_schema = load_schema("overlay_schema_1.0.0.yml")
+        overlay_schema = load_schema(schema_file)
         validator = Draft202012Validator(overlay_schema)
         errors = list(validator.iter_errors(overlay_doc))
         return format_errors(errors, output_format)

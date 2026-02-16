@@ -5,11 +5,11 @@ print(find_packages(where='src'))  # Debugging: Print detected packages
 from pathlib import Path
 
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 setup(
     name='oas_patch',
-    version='0.5.6',
+    version='0.6.0',
     description='A complete cli/lib to apply overlays to OpenAPI documents, powering your ci/cd and API lifecycle',
     long_description=long_description,
     long_description_content_type='text/markdown',

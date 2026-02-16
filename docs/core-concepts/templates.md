@@ -2,6 +2,8 @@
 
 The OAS Patcher template engine provides powerful dynamic content generation capabilities using Jinja2 templating. This allows you to create overlays that adapt to different environments, incorporate runtime variables, and generate content programmatically.
 
+> **Note**: Template features work with both Overlay 1.0.x and 1.1.x. Examples in this guide use 1.0.0 for simplicity, but you can use 1.1.0 to access additional features like the `copy` action.
+
 ## Template Engine Overview
 
 The template engine processes overlay files before they are applied to OpenAPI specifications. It supports:

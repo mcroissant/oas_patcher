@@ -5,15 +5,18 @@ A powerful command-line tool and Python library for working with OpenAPI Specifi
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://mcroissant.github.io/oas_patcher/)
 [![PyPI version](https://badge.fury.io/py/oas-patch.svg)](https://badge.fury.io/py/oas-patch)
 
-> **Try it now:** [Online Demo](https://vbtn4932y3.execute-api.us-east-1.amazonaws.com/dev/)
+[![Overlay Spec](https://img.shields.io/badge/Overlay-1.0%20%7C%201.1-green)](https://github.com/OAI/Overlay-Specification)
 
 ## Key Features
 
 🎯 **Overlay System** - Apply targeted modifications to OpenAPI documents  
+📋 **Copy Action** - Duplicate schemas and components within your API (Overlay 1.1)  
 📦 **Bundle Management** - Organize multiple overlays into reusable bundles  
 🌍 **Environment Support** - Different configurations for dev, staging, production  
 🔧 **Template Engine** - Use variables and dynamic content with Jinja2  
 ✅ **Validation** - Comprehensive validation for overlays and configurations  
+
+**Supports OpenAPI Overlay Specification 1.0 and 1.1** - Use the latest features or maintain backward compatibility.
 
 [View all features in documentation →](https://mcroissant.github.io/oas_patcher/core-concepts/overlays/)
 
@@ -46,14 +49,24 @@ oas-patch validate overlay.yaml
 
 ```yaml
 # overlay.yaml
-overlay: 1.0.0
+overlay: 1.1.0
 info:
   title: Production Environment Overlay
+  version: 1.0.0
+  description: Configures the API for production use
 actions:
+  # Update server URL
+
   - target: "$"
     update:
       servers:
         - url: https://api.production.com
+  
+  # Copy a schema to create a new one (Overlay 1.1 feature)
+  - target: "$.components.schemas.AdminUser"
+    copy: "$.components.schemas.User"
+    description: Create AdminUser schema based on User schema
+
 ```
 
 
