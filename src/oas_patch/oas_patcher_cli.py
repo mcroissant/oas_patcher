@@ -263,12 +263,11 @@ def apply(openapi_file, bundle_file, output, env, format, var, dry_run, verbose)
         if verbose:
             cli_utils.print_info(f"Loading bundle configuration: {bundle_file}")
 
-        # Validate bundle structure
-        required_fields = ["name", "overlays"]
-        for field in required_fields:
-            if field not in bundle_config:
-                cli_utils.print_error(f"Bundle file missing required field: {field}")
-                sys.exit(1)
+        # Validate bundle structure.  'name' is optional (falls back to the
+        # bundle file's stem); only 'overlays' is required.
+        if "overlays" not in bundle_config:
+            cli_utils.print_error("Bundle file missing required field: overlays")
+            sys.exit(1)
 
         # Get overlays from bundle config
         overlays = bundle_config.get("overlays", [])
@@ -358,11 +357,16 @@ def apply(openapi_file, bundle_file, output, env, format, var, dry_run, verbose)
                     )
                     continue
 
-                # Merge overlay variables
+                # Merge overlay variables.
+                # Precedence (highest → lowest):
+                #   CLI --var  >  overlay-specific vars  >  bundle-global vars
+                # We must not let overlay-specific vars clobber CLI vars.
                 overlay_variables = variables.copy()
                 overlay_vars = overlay_config.get("variables", {})
                 if overlay_vars:
-                    overlay_variables.update(overlay_vars)
+                    for key, value in overlay_vars.items():
+                        if key not in cli_variables:  # CLI variables win
+                            overlay_variables[key] = value
 
                 # Process templates in overlay
                 try:
