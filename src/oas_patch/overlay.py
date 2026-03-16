@@ -167,7 +167,16 @@ def _apply_update(parent, key, update):
     """Apply an update action to the parent."""
 
     if isinstance(parent, list):
-        deep_update(parent[key], update)
+        # For list parents, follow the same merge rules as dict parents:
+        # object+object -> recursive merge, array+array -> concatenate,
+        # everything else (primitive or type mismatch) -> replace.
+        current = parent[key]
+        if isinstance(current, dict) and isinstance(update, dict):
+            deep_update(current, update)
+        elif isinstance(current, list) and isinstance(update, list):
+            current.extend(update)
+        else:
+            parent[key] = update
     elif isinstance(parent.get(key), dict) and isinstance(update, dict):
         deep_update(parent[key], update)
     elif isinstance(parent.get(key), list) and isinstance(update, list):

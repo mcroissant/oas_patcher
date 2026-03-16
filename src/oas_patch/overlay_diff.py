@@ -14,8 +14,11 @@ class ActionType(Enum):
 
 
 def create_overlay(source_doc, target_doc):
-    # Compute the differences
-    diff = DeepDiff(source_doc, target_doc, view="tree", ignore_order=True)
+    # Compute the differences.
+    # ignore_order=False compares list items positionally so that remove and
+    # update actions always reference consistent indices even when elements are
+    # both changed and removed in the same list.
+    diff = DeepDiff(source_doc, target_doc, view="tree")
     overlay = {
         "overlay": "1.1.0",
         "info": {"title": "oas-patch generated overlay", "version": "1.0.0"},
@@ -43,6 +46,13 @@ def create_overlay(source_doc, target_doc):
             for key in removed_keys:
                 remove_path = f"{base_path}.{key}" if not base_path.endswith("]") else f"{base_path}['{key}']"
                 overlay[ACTIONS_FIELD].append({"target": remove_path, "remove": True})
+
+    # Handle type changes (e.g. str -> int, dict -> list).
+    # DeepDiff puts these in a separate "type_changes" category; treat them
+    # as plain update (replace) actions so the value is fully overwritten.
+    for diff_item in diff.get("type_changes", []):
+        action = _diff_to_action(diff_item, ActionType.UPDATE)
+        overlay[ACTIONS_FIELD].append(action)
 
     # Add update actions next
     for diff_item in diff.get("values_changed", []):
