@@ -277,6 +277,257 @@ def test_overlay_v1_1_copy_array():
     assert result["paths"]["/example"]["get"]["security"] == ["public", "user"]
 
 
+def test_copy_merges_into_existing_object():
+    """Per spec: copy to an existing object target MUST merge, not replace.
+
+    Spec: 'A property that only exists in the target object is left unchanged'
+    and copied properties follow the same recursive merge semantics as update.
+    """
+    openapi_doc = {
+        "components": {
+            "schemas": {
+                "Base": {
+                    "type": "object",
+                    "description": "Base schema",
+                    "properties": {"id": {"type": "integer"}}
+                },
+                "Extended": {
+                    "type": "object",
+                    "title": "Extended Schema",
+                    "properties": {"name": {"type": "string"}}
+                }
+            }
+        }
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Copy merge test", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.components.schemas['Extended']",
+                "copy": "$.components.schemas['Base']",
+                "description": "Merge Base into Extended; keys only in Extended must survive"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    extended = result["components"]["schemas"]["Extended"]
+    # 'title' exists only in target → must be preserved
+    assert extended["title"] == "Extended Schema", \
+        "copy must MERGE into existing object, not replace it (title lost)"
+    # 'description' exists only in source → must be inserted
+    assert extended["description"] == "Base schema"
+    # 'type' exists in both (primitive) → source value wins
+    assert extended["type"] == "object"
+    # 'properties' exists in both (objects) → must be recursively merged
+    assert "id" in extended["properties"], "source property 'id' must be added"
+    assert "name" in extended["properties"], "target property 'name' must be preserved"
+
+
+def test_copy_concatenates_into_existing_array():
+    """Per spec: copy to an existing non-empty array target MUST concatenate, not replace.
+
+    Spec: array + array → concatenate (same as update merge semantics).
+    """
+    openapi_doc = {
+        "paths": {
+            "/example": {
+                "get": {
+                    "tags": ["public", "user"],
+                    "security": [{"bearerAuth": []}]
+                }
+            }
+        }
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Copy concat test", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.paths['/example'].get.security",
+                "copy": "$.paths['/example'].get.tags",
+                "description": "Append tags into existing security list"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    security = result["paths"]["/example"]["get"]["security"]
+    # Original security entry must be preserved
+    assert {"bearerAuth": []} in security, \
+        "copy must CONCATENATE into existing array, not replace it"
+    # Copied items must be appended
+    assert "public" in security
+    assert "user" in security
+    assert len(security) == 3
+
+
+def test_copy_update_field_ignored_when_copy_present():
+    """Per spec: 'The update field has no impact when copy is present.'"""
+    openapi_doc = {
+        "info": {"title": "Original", "version": "1.0.0"},
+        "components": {
+            "schemas": {
+                "Foo": {"type": "object", "description": "from Foo"}
+            }
+        }
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Copy ignores update", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.info",
+                "copy": "$.components.schemas['Foo']",
+                "update": {"title": "SHOULD BE IGNORED"},
+                "description": "update must be ignored because copy is present"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    # The 'update' value must be ignored; only copy semantics apply
+    assert result["info"].get("title") != "SHOULD BE IGNORED", \
+        "update field must have no impact when copy is present"
+    # The copy source fields must be present
+    assert result["info"]["description"] == "from Foo"
+
+
+def test_copy_zero_source_matches_no_change():
+    """Per spec: 'If the copy expression selects zero nodes, the action succeeds
+    without changing the target document.'
+    """
+    openapi_doc = {
+        "info": {"title": "Unchanged", "version": "1.0.0"}
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Zero matches", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.info",
+                "copy": "$.nonexistent.path.that.does.not.exist"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    assert result["info"]["title"] == "Unchanged"
+    assert result["info"]["version"] == "1.0.0"
+
+
+def test_copy_primitive_replaces_primitive():
+    """Per spec: primitive + primitive → replace (same as update semantics)."""
+    openapi_doc = {
+        "info": {"title": "Old Title", "version": "1.0.0"},
+        "x-service-name": "old-service"
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Primitive copy", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.x-service-name",
+                "copy": "$.info.title",
+                "description": "Copy primitive string value"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    assert result["x-service-name"] == "Old Title"
+
+
+def test_copy_to_array_indexed_target():
+    """Copy to a target selected by integer array index must work."""
+    openapi_doc = {
+        "servers": [
+            {"url": "https://prod.example.com", "description": "Production"},
+            {"url": "https://staging.example.com", "description": "Staging"}
+        ]
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Copy to array index", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.servers[1]",
+                "copy": "$.servers[0]",
+                "description": "Copy prod server config onto the staging slot"
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    # servers[1] should now have prod's url merged in
+    assert result["servers"][1]["url"] == "https://prod.example.com"
+
+
+def test_update_array_indexed_target():
+    """Update targeting an element via integer array index must work."""
+    openapi_doc = {
+        "servers": [
+            {"url": "https://prod.example.com", "description": "Production"},
+            {"url": "https://staging.example.com", "description": "Staging"}
+        ]
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Update array index", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.servers[0]",
+                "update": {"description": "Main Production Server"}
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    assert result["servers"][0]["description"] == "Main Production Server"
+    assert result["servers"][0]["url"] == "https://prod.example.com"
+
+
+def test_remove_array_indexed_target():
+    """Remove targeting an element via integer array index must work."""
+    openapi_doc = {
+        "servers": [
+            {"url": "https://prod.example.com"},
+            {"url": "https://staging.example.com"}
+        ]
+    }
+
+    overlay = {
+        "overlay": "1.1.0",
+        "info": {"title": "Remove array index", "version": "1.0.0"},
+        "actions": [
+            {
+                "target": "$.servers[1]",
+                "remove": True
+            }
+        ]
+    }
+
+    result = apply_overlay(openapi_doc, overlay)
+
+    assert len(result["servers"]) == 1
+    assert result["servers"][0]["url"] == "https://prod.example.com"
+
+
 def test_overlay_v1_1_combined_actions():
     """Test combining update and copy actions in the same overlay."""
     openapi_doc = {
