@@ -7,7 +7,6 @@ correct end-to-end.
 """
 
 import copy
-import pytest
 from oas_patch.overlay_diff import create_overlay
 from oas_patch.overlay import apply_overlay
 

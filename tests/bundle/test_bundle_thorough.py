@@ -17,8 +17,6 @@ Covers:
 - Overlay-specific variables override bundle-global variables
 """
 
-import os
-import tempfile
 import pytest
 from pathlib import Path
 
